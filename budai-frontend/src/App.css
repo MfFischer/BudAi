@@ -1,51 +1,238 @@
-.chat-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+/* Global Styles */
+/* Animated Gradient Background */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(-45deg, #5f1e72, #023b86);
+  background-size: 400% 400%;
+  animation: gradientAnimation 10s ease infinite;
+  color: white;
 }
 
-.chat-history {
-  height: 400px;
-  overflow-y: auto;
-  border-bottom: 1px solid #ccc;
-  margin-bottom: 10px;
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-.message {
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.message.user {
-  background-color: #e1f5fe;
-  text-align: right;
-}
-
-.message.ai {
-  background-color: #f5f5f5;
-  text-align: left;
-}
-
-.chat-input {
+/* Navbar */
+.navbar {
   display: flex;
-}
-
-.chat-input input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.chat-input button {
-  margin-left: 10px;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px 20px;
-  background-color: #007bff;
+  background: #151235; /* Header color */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.navbar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.navbar h1 {
+  font-size: 24px;
+  margin: 0;
+  color: white;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 20px;
+}
+
+.navbar-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #FF6F61; /* Coral Pink on hover */
+}
+
+.navbar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: #151235; /* Header color */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
+
+  .navbar-toggle {
+    display: block;
+  }
+}
+
+/* Home Page */
+.home-container {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Hero Section */
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+.hero-content h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.hero-content p {
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #E0E0E0;
+}
+
+.hero-content button {
+  background: linear-gradient(to right, #4CAF50, #FF6F61);
   color: white;
   border: none;
+  padding: 12px 24px;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  margin-bottom: 40px; /* Increased space between button and avatar */
+}
+
+.hero-content button:hover {
+  transform: scale(1.05);
+}
+
+.hero-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  margin-top: 20px;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Features Section */
+.features-section {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.features-section h2 {
+  font-size: 36px;
+  margin-bottom: 40px;
+  color: #FF6F61; /* Coral Pink for emphasis */
+}
+
+.features-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.feature-card {
+  background: linear-gradient(to right, #2D5D7C, #6D5D7C);
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+}
+
+.feature-card h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #FF6F61; /* Coral Pink for emphasis */
+}
+
+.feature-card p {
+  font-size: 16px;
+  color: #E0E0E0; /* Light gray for readability */
+}
+
+/* Footer */
+.footer {
+  padding: 20px;
+  text-align: center;
+  background: #151235; /* Header color */
+  border-radius: 10px;
+  margin: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.footer-links {
+  margin-top: 10px;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #FF6F61; /* Coral Pink on hover */
 }

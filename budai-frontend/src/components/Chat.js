@@ -1,32 +1,44 @@
 // src/components/Chat.js
 import React, { useState } from "react";
-import { sendMessageToGemini } from "../services/gemini";
+import { motion } from "framer-motion";
 
 const Chat = () => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (message.trim() === "") return;
 
     // Add user message to chat history
     setChatHistory((prev) => [...prev, { sender: "user", text: message }]);
 
-    // Get AI response
-    const aiResponse = await sendMessageToGemini(message);
-    setChatHistory((prev) => [...prev, { sender: "ai", text: aiResponse }]);
+    // Simulate AI response
+    setTimeout(() => {
+      setChatHistory((prev) => [...prev, { sender: "ai", text: "This is a response from BudAi." }]);
+    }, 500);
 
     // Clear input
     setMessage("");
   };
 
   return (
-    <div className="chat-container">
+    <motion.div
+      className="chat-container"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+    >
       <div className="chat-history">
         {chatHistory.map((msg, index) => (
-          <div key={index} className={`message ${msg.sender}`}>
+          <motion.div
+            key={index}
+            className={`message ${msg.sender}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             {msg.text}
-          </div>
+          </motion.div>
         ))}
       </div>
       <div className="chat-input">
@@ -36,9 +48,15 @@ const Chat = () => {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message..."
         />
-        <button onClick={handleSendMessage}>Send</button>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={handleSendMessage}
+        >
+          Send
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
