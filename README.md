@@ -43,7 +43,7 @@
 
 1. Clone the repo
 ```bash
-git clone https://github.com/yourusername/budai.git
+git clone https://github.com/MfFischer/BudAi.git
 cd budai
 ```
 
