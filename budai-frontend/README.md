@@ -1,70 +1,125 @@
-# Getting Started with Create React App
+# 🤖 Budd
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Your emotionally intelligent AI companion, powered by Gemini Pro
 
-## Available Scripts
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- 💬 Real-time AI chat with context awareness
+- 🎯 Personalized activity recommendations
+- 📊 Mood tracking and insights
+- 🔐 Secure Google authentication
+- 💫 Modern, responsive UI with animations
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🛠️ Tech Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Frontend**: React, Framer Motion, Firebase Auth
+- **Backend**: Node.js, Express
+- **Database**: Firestore
+- **AI**: Gemini Pro
+- **Authentication**: Firebase
 
-### `npm test`
+## 🚀 Quick Start
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Node.js 18.x
+- npm/yarn
+- Firebase account
+- Gemini Pro API key
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone the repo
+```bash
+git clone https://github.com/yourusername/budai.git
+cd budai
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. Install dependencies
+```bash
+# Install frontend dependencies
+cd frontend && npm install
 
-### `npm run eject`
+# Install backend dependencies
+cd ../backend && npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. Environment setup
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+# Frontend (.env)
+REACT_APP_FIREBASE_API_KEY=
+REACT_APP_FIREBASE_AUTH_DOMAIN=
+REACT_APP_FIREBASE_PROJECT_ID=
+REACT_APP_FIREBASE_STORAGE_BUCKET=
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
+REACT_APP_FIREBASE_APP_ID=
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# Backend (.env)
+PORT=5000
+GEMINI_API_KEY=
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+4. Start development servers
+```bash
+# Frontend (localhost:3000)
+cd frontend && npm start
 
-## Learn More
+# Backend (localhost:5000)
+cd backend && npm run dev
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📁 Project Structure
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+budai/
+├── frontend/
+│   ├── public/
+│   │   ├── images/
+│   │   └── index.html
+│   └── src/
+│       ├── components/
+│       │   ├── Home.js
+│       │   ├── Chat.js
+│       │   ├── Profile.js
+│       │   └── Activities.js
+│       ├── contexts/
+│       │   └── AuthContext.js
+│       ├── firebase.js
+│       └── App.js
+└── backend/
+    ├── routes/
+    ├── firebase-key.json
+    └── server.js
+```
 
-### Code Splitting
+## 🔧 Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Firebase Setup
 
-### Analyzing the Bundle Size
+1. Create a Firebase project
+2. Enable Authentication (Google provider)
+3. Create Firestore database
+4. Download service account key
+5. Add to `backend/firebase-key.json`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Gemini Pro Setup
 
-### Making a Progressive Web App
+1. Get API key from Google AI Studio
+2. Add to backend `.env`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🤝 Contributing
 
-### Advanced Configuration
+1. Fork it
+2. Create feature branch (`git checkout -b feature/awesome`)
+3. Commit changes (`git commit -am 'feat: add awesome'`)
+4. Push (`git push origin feature/awesome`)
+5. Open Pull Request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 📝 License
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT © Maria Fe Fischer
