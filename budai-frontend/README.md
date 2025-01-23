@@ -6,6 +6,14 @@
 [![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
 
+📱 App Screenshots
+<div align="center">
+  <div style="display: flex; gap: 20px; justify-content: center;">
+    <img src="public/images/home-screen.png" alt="BudAI Home Screen" width="280"/>
+    <img src="public/images/login-screen.png" alt="BudAI Login Screen" width="280"/> 
+  </div>
+</div>
+
 ## ✨ Features
 
 - 💬 Real-time AI chat with context awareness
