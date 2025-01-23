@@ -25,7 +25,7 @@ const Home = () => {
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
-            Welcome to BudAi
+            Hello Im Budd
           </motion.h1>
           <motion.p
             animate={{ y: [0, -10, 0] }}

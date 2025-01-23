@@ -19,7 +19,7 @@ const Navbar = () => {
           alt="BudAi Logo"
           className="navbar-logo"
         />
-        <h1>BudAi</h1>
+        <h1>Budd</h1>
       </div>
       <div className={`navbar-links ${isOpen ? "active" : ""}`}>
         <Link to="/">Home</Link>

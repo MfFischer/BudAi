@@ -236,3 +236,96 @@ body {
 .footer-links a:hover {
   color: #FF6F61; /* Coral Pink on hover */
 }
+/* Chat Page */
+.chat-container {
+  padding: 20px;
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.chat-history {
+  height: 70vh;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(26, 26, 46, 0.8); /* Semi-transparent dark background */
+  backdrop-filter: blur(10px); /* Blur effect for modern look */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  display: flex;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.message.user {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.message.ai {
+  margin-right: auto;
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 15px;
+  position: relative;
+}
+
+.message.user .message-bubble {
+  background: linear-gradient(to right, #4CAF50, #FF6F61); /* User message gradient */
+  color: white;
+  border-radius: 15px 15px 0 15px;
+}
+
+.message.ai .message-bubble {
+  background: linear-gradient(to right, #2D5D7C, #6D5D7C); /* AI message gradient */
+  color: white;
+  border-radius: 15px 15px 15px 0;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(26, 26, 46, 0.8); /* Semi-transparent dark background */
+  backdrop-filter: blur(10px); /* Blur effect for modern look */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: #2D5D7C;
+  color: white;
+  outline: none;
+}
+
+.chat-input button {
+  background: linear-gradient(to right, #4CAF50, #FF6F61);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.chat-input button:hover {
+  transform: scale(1.05);
+}

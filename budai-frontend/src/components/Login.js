@@ -14,7 +14,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h2>Welcome to BudAi</h2>
+      <h2>Welcome to Bud</h2>
       <button onClick={handleGoogleLogin}>Sign in with Google</button>
     </div>
   );

@@ -1,10 +1,11 @@
 // src/components/Chat.js
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 const Chat = () => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const chatEndRef = useRef(null);
 
   const handleSendMessage = () => {
     if (message.trim() === "") return;
@@ -20,6 +21,13 @@ const Chat = () => {
     // Clear input
     setMessage("");
   };
+
+  // Scroll to the bottom of the chat when a new message is added
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatHistory]);
 
   return (
     <motion.div
@@ -37,9 +45,12 @@ const Chat = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {msg.text}
+            <div className="message-bubble">
+              <p>{msg.text}</p>
+            </div>
           </motion.div>
         ))}
+        <div ref={chatEndRef} /> {/* Empty div to scroll to */}
       </div>
       <div className="chat-input">
         <input
@@ -47,6 +58,7 @@ const Chat = () => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message..."
+          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
         />
         <motion.button
           whileHover={{ scale: 1.1 }}
