@@ -1,0 +1,9 @@
+# Sensitive files
+firebase-key.json
+
+# Environment
+.env
+.env.*
+
+# Dependencies
+node_modules/

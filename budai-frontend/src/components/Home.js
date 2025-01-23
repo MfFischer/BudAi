@@ -1,10 +1,38 @@
-// src/components/Home.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleStartChat = async () => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      navigate("/chat");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -13,7 +41,6 @@ const Home = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      {/* Hero Section */}
       <div className="hero-section">
         <motion.div
           className="hero-content"
@@ -25,7 +52,7 @@ const Home = () => {
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
-            Hello Im Budd
+            {user ? `Welcome back, ${user.displayName || 'Friend'}!` : "Hello I'm Budd"}
           </motion.h1>
           <motion.p
             animate={{ y: [0, -10, 0] }}
@@ -36,13 +63,13 @@ const Home = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => navigate("/chat")}
+            onClick={handleStartChat}
+            className="primary-button"
           >
-            Start Chatting
+            {user ? "Continue Chat" : "Start Chatting"}
           </motion.button>
-          {/* Avatar Logo - Moved below the button */}
           <motion.img
-            src="/images/budai-avatar.png" // Path to your avatar
+            src="/images/budai-avatar.png"
             alt="BudAi Avatar"
             className="hero-avatar"
             initial={{ y: 50, opacity: 0 }}

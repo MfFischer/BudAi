@@ -724,3 +724,121 @@ body {
     flex-direction: column;
   }
 }
+/*Login page */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.login-card {
+  background: rgba(26, 26, 46, 0.9);
+  padding: 40px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.login-logo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  border: 3px solid #FF6F61;
+}
+
+.login-card h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #FF6F61, #FF8F61);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-card p {
+  color: #E0E0E0;
+  margin-bottom: 24px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.login-form input {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(45, 93, 124, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #FF6F61;
+  background: rgba(45, 93, 124, 0.5);
+}
+
+.login-button, .google-button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-button {
+  background: linear-gradient(135deg, #FF6F61, #FF8F61);
+  color: white;
+}
+
+.google-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.google-button img {
+  width: 20px;
+  height: 20px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 16px;
+  color: #E0E0E0;
+  font-size: 14px;
+}
+
+.error-message {
+  color: #FF6F61;
+  margin-top: 16px;
+  font-size: 14px;
+}
