@@ -9,8 +9,8 @@
 📱 App Screenshots
 <div align="center">
   <div style="display: flex; gap: 20px; justify-content: center;">
-    <img src="public/images/home-screen.png" alt="BudAI Home Screen" width="280"/>
-    <img src="public/images/login-screen.png" alt="BudAI Login Screen" width="280"/> 
+    <img src="budai-frontend/public/images/home-screen.png" alt="BudAI Home Screen" width="280"/>
+    <img src="budai-frontend/public/images/login-screen.png" alt="BudAI Login Screen" width="280"/> 
   </div>
 </div>
 
