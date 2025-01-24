@@ -1,22 +1,33 @@
 // src/components/Chat.js
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const Chat = () => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const chatEndRef = useRef(null);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim() === "") return;
 
     // Add user message to chat history
     setChatHistory((prev) => [...prev, { sender: "user", text: message }]);
 
-    // Simulate AI response
-    setTimeout(() => {
-      setChatHistory((prev) => [...prev, { sender: "ai", text: "This is a response from BudAi." }]);
-    }, 500);
+    // Send message to backend
+    try {
+      const response = await axios.post("/api/chat", { message });
+      const { aiResponse, activities } = response.data;
+
+      // Add AI response to chat history
+      setChatHistory((prev) => [
+        ...prev,
+        { sender: "ai", text: aiResponse },
+        { sender: "ai", text: `Suggested Activities: ${activities.join(", ")}` },
+      ]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
 
     // Clear input
     setMessage("");
