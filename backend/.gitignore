@@ -7,3 +7,4 @@ firebase-key.json
 
 # Dependencies
 node_modules/
+backend/firebase-key.json

@@ -1,10 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const { db } = require('./config/firebase');
 const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
+const chatRouter = require('./routes/chat');
+app.use('/api', chatRouter);
 
 // Initialize Firebase
 admin.initializeApp({
