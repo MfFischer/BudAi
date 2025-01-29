@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { auth, googleProvider } from "../firebase";
-import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { auth, googleProvider, db } from "../firebase/config";
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,10 +19,14 @@ const Login = () => {
     }
   };
 
-  const handleEmailLogin = async (e) => {
+  const handleEmailAuth = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isRegistering) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
       navigate("/chat");
     } catch (error) {
       setError(error.message);
@@ -30,57 +34,51 @@ const Login = () => {
   };
 
   return (
-    <motion.div
-      className="login-container"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="login-container">
       <div className="login-card">
-        <motion.img
-          src="/images/budai-avatar.png"
-          alt="BudAi Logo"
-          className="login-logo"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5 }}
-        />
+      <img src="/images/budai-avatar.png" alt="Budd Logo" className="login-logo" />
         <h2>Welcome to Budd</h2>
         <p>Your AI companion for emotional well-being</p>
 
-        <form onSubmit={handleEmailLogin} className="login-form">
+        <form onSubmit={handleEmailAuth} className="login-form">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
-          <button type="submit" className="login-button">Sign In</button>
+          <button type="submit" className="login-button">
+            {isRegistering ? "Sign Up" : "Sign In"}
+          </button>
         </form>
 
         <div className="divider">
           <span>or</span>
         </div>
 
-        <motion.button
-          className="google-button"
-          onClick={handleGoogleLogin}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <button onClick={handleGoogleLogin} className="google-button">
           <img src="/images/google-icon.svg" alt="Google" />
           Sign in with Google
-        </motion.button>
+        </button>
+
+        <button 
+          onClick={() => setIsRegistering(!isRegistering)} 
+          className="text-sm text-gray-400 mt-4 hover:text-[#FF6F61]"
+        >
+          {isRegistering ? "Already have an account? Sign in" : "Need an account? Sign up"}
+        </button>
 
         {error && <p className="error-message">{error}</p>}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

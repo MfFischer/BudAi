@@ -143,7 +143,18 @@ body {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+.hero-content button {
+  background: linear-gradient(to right, #4CAF50, #FF6F61);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
+  margin-bottom: 40px; /* Increased space between button and avatar */
+}
   margin-bottom: 40px; /* Increased space between button and avatar */
 }
 
@@ -468,11 +479,11 @@ body {
   .activities-container {
     padding: 16px;
   }
-  
+
   .activity-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .section-title {
     font-size: 20px;
   }
@@ -1312,11 +1323,11 @@ body {
   .activities-container {
     padding: 16px;
   }
-  
+
   .activity-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .section-title {
     font-size: 20px;
   }
@@ -1547,23 +1558,23 @@ body {
     gap: 24px;
     padding: 24px;
   }
-  
+
   .profile-picture {
     margin: 0 auto;
   }
-  
+
   .user-info {
     text-align: center;
   }
-  
+
   .quick-stats {
     justify-content: center;
   }
-  
+
   .tabs {
     grid-template-columns: 1fr;
   }
-  
+
   .cta-buttons {
     flex-direction: column;
   }
@@ -1686,4 +1697,275 @@ body {
   color: #FF6F61;
   margin-top: 16px;
   font-size: 14px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background: #f5f5f5;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.message.system {
+  color: #dc3545;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Add these styles to your app.css */
+
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #5f1e72, #023b86);
+  padding: 2rem;
+}
+
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: rgba(26, 26, 46, 0.8);
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.profile-header {
+  background: linear-gradient(to right, rgba(45, 93, 124, 0.3), rgba(109, 93, 124, 0.3));
+  padding: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-avatar-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-right: 2rem;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid #FF6F61;
+  object-fit: cover;
+  background: linear-gradient(135deg, #2D5D7C, #6D5D7C);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.profile-edit-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 32px;
+  height: 32px;
+  background: #FF6F61;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.profile-edit-icon:hover {
+  transform: scale(1.1);
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  overflow-x: auto;
+  background: rgba(26, 26, 46, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.profile-tab:hover {
+  background: rgba(255, 111, 97, 0.2);
+}
+
+.profile-tab.active {
+  background: #FF6F61;
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
+}
+
+.profile-content {
+  padding: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.profile-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.profile-label {
+  display: block;
+  color: white;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(45, 93, 124, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.profile-input:focus {
+  outline: none;
+  border-color: #FF6F61;
+  background: rgba(45, 93, 124, 0.5);
+}
+
+.profile-select {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(45, 93, 124, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.profile-select option {
+  background: #151235;
+  color: white;
+}
+
+.profile-save-btn {
+  background: linear-gradient(135deg, #FF6F61, #FF8F61);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+}
+
+.profile-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
+}
+
+.profile-status {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+.profile-status.success {
+  background: rgba(72, 187, 120, 0.2);
+  color: #48bb78;
+}
+
+.profile-status.error {
+  background: rgba(245, 101, 101, 0.2);
+  color: #f56565;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-avatar-container {
+    margin: 0 auto 1rem;
+  }
+
+  .profile-tabs {
+    padding: 1rem;
+  }
+}
+
+.quote-date {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.quote-card {
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 1rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.quote-card:hover {
+  transform: translateY(-5px);
+}
+
+.quote {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: white;
+  line-height: 1.4;
+}
+
+.quote-theme {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: capitalize;
+  display: inline-block;
+  padding: 0.2rem 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
 }

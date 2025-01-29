@@ -3,15 +3,35 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import axios from "axios";
 
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const response = await axios.get("http://localhost:5000/api/profile", {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          // Get first name from full name
+          const fullName = response.data.name || "";
+          const firstName = fullName.split(" ")[0];
+          setFirstName(firstName);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      }
       setLoading(false);
     });
 
@@ -52,14 +72,16 @@ const Home = () => {
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
-            {user ? `Welcome back, ${user.displayName || 'Friend'}!` : "Hello I'm Budd"}
+            {user ? `Hey ${firstName || 'Friend'}! Let's have a meaningful conversation.` : "Hello I'm Budd"}
           </motion.h1>
-          <motion.p
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          >
-            Your emotionally intelligent AI companion.
-          </motion.p>
+          {!user && (
+            <motion.p
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              Your emotionally intelligent AI companion.
+            </motion.p>
+          )}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

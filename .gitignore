@@ -24,3 +24,6 @@ frontend/node_modules/
 dist/
 build/
 backend/firebase-key.json
+backend/.env
+
+budai-frontend/.env

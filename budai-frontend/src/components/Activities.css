@@ -1,0 +1,178 @@
+.activities-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .activity-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .activity-card h3 {
+    color: white;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .activity-card p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+  }
+  
+  .journaling-tool {
+    margin: 2rem 0;
+  }
+  
+  .journaling-tool textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    color: white;
+    margin: 1rem 0;
+    resize: vertical;
+  }
+  
+  .journaling-tool button {
+    background: linear-gradient(to right, #4CAF50, #FF6F61);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .quote-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .quote-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .quote-date {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+  }
+  
+  .quote {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: white;
+    line-height: 1.4;
+  }
+  
+  .quote-theme {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: capitalize;
+    display: inline-block;
+    padding: 0.2rem 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+  }
+  
+  .section-title {
+    color: white;
+    font-size: 1.5rem;
+    margin: 2rem 0 1rem;
+  }
+  
+  .journal-response {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 0.5rem;
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .activities-container {
+      padding: 1rem;
+    }
+  
+    .activity-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .quote {
+      font-size: 1.25rem;
+    }
+  }
+  .mindfulness-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+  }
+  
+  .activity-details {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+  }
+  
+  .activity-duration,
+  .activity-benefits {
+    margin: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .label {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    margin-right: 0.5rem;
+  }
+  
+  .activity-instructions {
+    margin-top: 1.5rem;
+  }
+  
+  .activity-instructions h4 {
+    color: white;
+    margin-bottom: 1rem;
+  }
+  
+  .activity-instructions ol {
+    list-style-position: inside;
+    padding-left: 1rem;
+  }
+  
+  .activity-instructions li {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.5rem 0;
+    line-height: 1.4;
+  }
+  
+  .activity-guidance {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.8);
+  }
