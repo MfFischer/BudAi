@@ -13,6 +13,7 @@
   
   .activity-card {
     background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
     backdrop-filter: blur(10px);
     padding: 1.5rem;
     border-radius: 1rem;
@@ -59,6 +60,7 @@
   
   .quote-card {
     background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
     backdrop-filter: blur(10px);
     padding: 2rem;
     border-radius: 1rem;
@@ -125,6 +127,7 @@
   }
   .mindfulness-card {
     background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
     backdrop-filter: blur(10px);
     padding: 2rem;
   }
