@@ -1,5 +1,6 @@
+# netlify.toml
 [build]
-  command = "CI=false npm install --legacy-peer-deps && npm run build"
+  command = "CI=false npm ci && npm run build"
   publish = "build"
 
 [build.environment]
