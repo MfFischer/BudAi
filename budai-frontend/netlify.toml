@@ -1,8 +1,7 @@
-# netlify.toml
 [build]
-  command = "CI=false npm ci && npm run build"
+  command = "npm ci && npm run build"
   publish = "build"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_CONFIG_LEGACY_PEER_DEPS = "true"
+  CI = "false"
