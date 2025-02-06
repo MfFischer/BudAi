@@ -2,11 +2,13 @@
 
 > Your emotionally intelligent AI companion, powered by Gemini Pro
 
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
 
 📱 App Screenshots
+https://buddai.chat
 <div align="center">
   <div style="display: flex; gap: 20px; justify-content: center;">
     <img src="budai-frontend/public/images/home-screen.png" alt="BudAI Home Screen" width="280"/>
