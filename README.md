@@ -103,7 +103,7 @@ budai/
 │       └── App.js
 └── backend/
     ├── routes/
-    ├── firebase-key.json
+    ├── .env
     └── server.js
 ```
 
