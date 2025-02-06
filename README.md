@@ -114,21 +114,14 @@ budai/
 1. Create a Firebase project
 2. Enable Authentication (Google provider)
 3. Create Firestore database
-4. Download service account key
-5. Add to `backend/firebase-key.json`
+
 
 ### Gemini Pro Setup
 
 1. Get API key from Google AI Studio
 2. Add to backend `.env`
 
-## 🤝 Contributing
 
-1. Fork it
-2. Create feature branch (`git checkout -b feature/awesome`)
-3. Commit changes (`git commit -am 'feat: add awesome'`)
-4. Push (`git push origin feature/awesome`)
-5. Open Pull Request
 
 ## 📝 License
 
