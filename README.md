@@ -2,11 +2,13 @@
 
 > Your emotionally intelligent AI companion, powered by Gemini Pro
 
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
 
 📱 App Screenshots
+https://buddai.chat
 <div align="center">
   <div style="display: flex; gap: 20px; justify-content: center;">
     <img src="budai-frontend/public/images/home-screen.png" alt="BudAI Home Screen" width="280"/>
@@ -101,7 +103,7 @@ budai/
 │       └── App.js
 └── backend/
     ├── routes/
-    ├── firebase-key.json
+    ├── .env
     └── server.js
 ```
 
@@ -112,21 +114,14 @@ budai/
 1. Create a Firebase project
 2. Enable Authentication (Google provider)
 3. Create Firestore database
-4. Download service account key
-5. Add to `backend/firebase-key.json`
+
 
 ### Gemini Pro Setup
 
 1. Get API key from Google AI Studio
 2. Add to backend `.env`
 
-## 🤝 Contributing
 
-1. Fork it
-2. Create feature branch (`git checkout -b feature/awesome`)
-3. Commit changes (`git commit -am 'feat: add awesome'`)
-4. Push (`git push origin feature/awesome`)
-5. Open Pull Request
 
 ## 📝 License
 
