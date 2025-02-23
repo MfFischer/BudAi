@@ -1,32 +1,49 @@
 const express = require("express");
 const router = express.Router();
-const { suggestActivities } = require("../services/activitySuggestion");
 const { db } = require("../config/firebase");
+const { getActivitySuggestions, submitJournalEntry } = require("../controllers/activityController");
 
-router.get("/suggestions/:uid", async (req, res) => {
+// Verify UID middleware
+const verifyUid = (req, res, next) => {
+  const { uid } = req.params;
+  if (uid !== req.user.uid) {
+    return res.status(403).json({
+      success: false,
+      error: "Unauthorized access"
+    });
+  }
+  next();
+};
+
+// Activity suggestions route
+router.get("/suggestions/:uid", verifyUid, getActivitySuggestions);
+
+// Submit journal entry route
+router.post("/journal/:uid", verifyUid, submitJournalEntry);
+
+// Get journal entries route
+router.get("/journal/:uid", verifyUid, async (req, res) => {
   try {
     const { uid } = req.params;
-    
-    // Get user's recent chat messages
-    const recentChats = await db.collection("chats")
-      .where("uid", "==", uid)
-      .orderBy("timestamp", "desc")
-      .limit(5)
+    const entries = await db.collection('journal_entries')
+      .where('uid', '==', uid)
+      .orderBy('timestamp', 'desc')
       .get();
 
-    // Get the most recent message and emotion
-    const latestChat = recentChats.docs[0]?.data();
-    const recentEmotion = {
-      dominantEmotion: latestChat?.emotion || "neutral"
-    };
-    const recentMessage = latestChat?.message || "";
-
-    // Get personalized suggestions
-    const suggestions = await suggestActivities(recentEmotion, recentMessage);
-    res.json(suggestions);
+    res.json({
+      success: true,
+      data: entries.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate()
+      }))
+    });
   } catch (error) {
-    console.error("Error getting activity suggestions:", error);
-    res.status(500).json({ error: "Failed to get suggestions" });
+    console.error('Error fetching journal entries:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to fetch journal entries" 
+    });
   }
 });
 

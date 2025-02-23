@@ -3,18 +3,21 @@
     "version": "1.0.0",
     "description": "BudAi - Emotionally Intelligent AI Companion",
     "scripts": {
-      "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
-      "start-backend": "cd backend && npm start",
-      "start-frontend": "cd budai-frontend && npm start", 
-      "build": "cd budai-frontend && npm run build",
-      "install-all": "npm install && cd backend && npm install && cd ../budai-frontend && npm install"
+        "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
+        "start-backend": "cd backend && npm start",
+        "start-frontend": "cd budai-frontend && npm start",
+        "build": "cd budai-frontend && npm run build",
+        "install-all": "npm install && cd backend && npm install && cd ../budai-frontend && npm install"
     },
     "keywords": [],
     "author": "Your Name",
     "license": "MIT",
     "dependencies": {
-      "@google/generative-ai": "^0.21.0",
-      "concurrently": "^8.2.1",
-      "firebase": "^11.2.0"
+        "@google/generative-ai": "^0.21.0",
+        "concurrently": "^8.2.1",
+        "debug": "^4.4.0",
+        "express-rate-limit": "^7.5.0",
+        "firebase": "^11.2.0",
+        "firebase-admin": "^13.1.0"
     }
-  }
+}

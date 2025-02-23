@@ -1,4 +1,3 @@
-// backend/routes/chatRoutes.js
 const express = require("express");
 const router = express.Router();
 const { admin, db } = require("../config/firebase");
@@ -6,106 +5,133 @@ const { analyzeEmotion } = require("../services/emotionAnalysis");
 const { generateResponse } = require("../services/aiResponse");
 const { handleResponse, handleError } = require("../utils/apiHelpers");
 
+// Verify UID middleware
+const verifyUid = (req, res, next) => {
+  const { uid } = req.params;
+  if (uid !== req.user.uid) {
+    return handleResponse(res, 403, { 
+      success: false, 
+      error: "Unauthorized access" 
+    });
+  }
+  next();
+};
+
 // Main chat endpoint
 router.post("/", async (req, res) => {
   try {
     const { message, uid } = req.body;
     if (!message) {
-      return handleResponse(res, 400, { error: 'Message is required' });
+      return handleResponse(res, 400, { 
+        success: false, 
+        error: 'Message is required' 
+      });
     }
 
-    // Check for specific user questions about the bot
-    if (message.toLowerCase().includes("your name") || message.toLowerCase().includes("who are you")) {
-      const botIdentityResponse = "I'm Budd, your intelligent emotional companion. How can I assist you today?";
+    // Check bot identity questions
+    if (message.toLowerCase().includes("your name") || 
+        message.toLowerCase().includes("who are you")) {
+      const botResponse = "I'm Budd, your intelligent emotional companion. How can I assist you today?";
       
-      // Save conversation to Firestore
-      await db.collection("chats").add({
-        uid,
-        message,
-        sender: 'user',
-        timestamp: admin.firestore.FieldValue.serverTimestamp()
-      });
-
-      await db.collection("chats").add({
-        uid,
-        message: botIdentityResponse,
-        sender: 'ai',
-        timestamp: admin.firestore.FieldValue.serverTimestamp()
-      });
+      // Save conversation
+      await Promise.all([
+        db.collection("chats").add({
+          uid,
+          message,
+          sender: 'user',
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        }),
+        db.collection("chats").add({
+          uid,
+          message: botResponse,
+          sender: 'ai',
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        })
+      ]);
 
       return handleResponse(res, 200, {
-        aiResponse: botIdentityResponse,
-        timestamp: Date.now()
+        success: true,
+        aiResponse: botResponse
       });
     }
 
-    // Fetch chat history for context - Updated query
-    const chatHistory = await db.collection("chats")
-      .where("uid", "==", uid)
-      .orderBy("timestamp", "desc")
-      .limit(5)
-      .get();
+   // Get chat history for context
+   const chatHistory = await db.collection("chats")
+   .where("uid", "==", uid)
+   .orderBy("timestamp", "desc")
+   .limit(5)
+   .get();
 
-    const history = chatHistory.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      .reverse();
+ // Format history properly
+ const history = chatHistory.docs
+   .map(doc => ({
+     message: doc.data().message,
+     sender: doc.data().sender,
+     timestamp: doc.data().timestamp
+   }))
+   .reverse();
 
-    let emotion;
-    try {
-      emotion = await analyzeEmotion(message);
-      console.log("Detected emotion:", emotion);
-    } catch (emotionError) {
-      console.error("Error analyzing emotion:", emotionError);
-      emotion = { dominantEmotion: 'neutral' };
-    }
+ try {
+   // Analyze emotion and generate response
+   const [emotion, aiResponse] = await Promise.all([
+     analyzeEmotion(message),
+     generateResponse(message, { dominantEmotion: 'neutral' }, history || [])
+   ]);
 
-    // Generate AI response
-    const aiResponse = await generateResponse(message, emotion, history);
+   // Save messages
+   await Promise.all([
+     db.collection("chats").add({
+       uid,
+       message,
+       sender: 'user',
+       emotion: emotion.dominantEmotion,
+       timestamp: admin.firestore.FieldValue.serverTimestamp()
+     }),
+     db.collection("chats").add({
+       uid,
+       message: aiResponse,
+       sender: 'ai',
+       timestamp: admin.firestore.FieldValue.serverTimestamp()
+     })
+   ]);
 
-    // Save user message to Firestore
-    await db.collection("chats").add({
-      uid,
-      message,
-      sender: 'user',
-      emotion: emotion.dominantEmotion,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
-    });
+   handleResponse(res, 200, {
+     success: true,
+     message: aiResponse,
+     emotion: emotion.dominantEmotion
+   });
+ } catch (apiError) {
+   // Handle API quota errors
+   if (apiError.message?.includes('RESOURCE_EXHAUSTED') || 
+       apiError.message?.includes('quota') || 
+       apiError.message?.includes('rate limit')) {
+     
+     const resetTime = new Date();
+     resetTime.setHours(24, 0, 0, 0);
 
-    // Save AI response to Firestore
-    await db.collection("chats").add({
-      uid,
-      message: aiResponse,
-      sender: 'ai',
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    handleResponse(res, 200, {
-      aiResponse,
-      emotion: emotion.dominantEmotion,
-      timestamp: Date.now()
-    });
-  } catch (error) {
-    console.error("Chat error:", error);
-    handleError(res, error);
-  }
+     return handleResponse(res, 429, {
+       success: false,
+       error: 'Free messaging limit reached',
+       resetTime: resetTime.toISOString(),
+       message: 'The free messaging tier has been exhausted. Services will reset at midnight Pacific Time.'
+     });
+   }
+   throw apiError;
+ }
+} catch (error) {
+ console.error("Chat error:", error);
+ handleError(res, error);
+}
 });
 
 // Chat history endpoint
-router.get("/chat-history/:uid", async (req, res) => {
+router.get("/chat-history/:uid", verifyUid, async (req, res) => {
   try {
     const { uid } = req.params;
     
-    // Verify user owns this chat history
-    if (!req.user || uid !== req.user.uid) {
-      return handleResponse(res, 403, { error: 'Unauthorized access to chat history' });
-    }
-
     const chats = await db.collection("chats")
       .where("uid", "==", uid)
-      .orderBy("timestamp", "asc")
+      .orderBy("timestamp", "desc")
       .limit(50)
       .get();
 
@@ -115,7 +141,10 @@ router.get("/chat-history/:uid", async (req, res) => {
       timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : null
     }));
 
-    handleResponse(res, 200, chatHistory);
+    handleResponse(res, 200, {
+      success: true,
+      data: chatHistory
+    });
   } catch (error) {
     console.error("Error fetching chat history:", error);
     handleError(res, error);
@@ -123,25 +152,33 @@ router.get("/chat-history/:uid", async (req, res) => {
 });
 
 // Delete chat message endpoint
-router.delete("/message/:messageId", async (req, res) => {
+router.delete("/message/:messageId", verifyUid, async (req, res) => {
   try {
     const { messageId } = req.params;
-    const { uid } = req.body;
+    const uid = req.user.uid;
 
-    // Verify user owns this message
     const messageRef = db.collection("chats").doc(messageId);
     const message = await messageRef.get();
 
     if (!message.exists) {
-      return handleResponse(res, 404, { error: 'Message not found' });
+      return handleResponse(res, 404, { 
+        success: false, 
+        error: 'Message not found' 
+      });
     }
 
     if (message.data().uid !== uid) {
-      return handleResponse(res, 403, { error: 'Unauthorized to delete this message' });
+      return handleResponse(res, 403, { 
+        success: false, 
+        error: 'Unauthorized to delete this message' 
+      });
     }
 
     await messageRef.delete();
-    handleResponse(res, 200, { message: 'Message deleted successfully' });
+    handleResponse(res, 200, { 
+      success: true,
+      message: 'Message deleted successfully' 
+    });
   } catch (error) {
     console.error("Error deleting message:", error);
     handleError(res, error);
@@ -149,30 +186,27 @@ router.delete("/message/:messageId", async (req, res) => {
 });
 
 // Clear chat history endpoint
-router.delete("/clear-history/:uid", async (req, res) => {
+router.delete("/clear-history/:uid", verifyUid, async (req, res) => {
   try {
     const { uid } = req.params;
-
-    // Verify user owns this chat history
-    if (!req.user || uid !== req.user.uid) {
-      return handleResponse(res, 403, { error: 'Unauthorized to clear chat history' });
-    }
-
+    
     const chatRef = db.collection("chats");
-const query = chatRef
-  .where("uid", "==", uid)
-  .orderBy("timestamp", "desc")
-  .orderBy("__name__", "desc");
+    const query = chatRef
+      .where("uid", "==", uid)
+      .orderBy("timestamp", "desc");
 
-const chatDocs = await query.get();
-    // Delete all messages in batches
+    const chatDocs = await query.get();
+    
     const batch = db.batch();
     chatDocs.docs.forEach(doc => {
       batch.delete(doc.ref);
     });
     await batch.commit();
 
-    handleResponse(res, 200, { message: 'Chat history cleared successfully' });
+    handleResponse(res, 200, { 
+      success: true,
+      message: 'Chat history cleared successfully' 
+    });
   } catch (error) {
     console.error("Error clearing chat history:", error);
     handleError(res, error);

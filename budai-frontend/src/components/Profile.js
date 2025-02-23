@@ -2,15 +2,19 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { auth } from "../firebase/config";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePrivacy } from '../contexts/PrivacyContext';
 
-const languageOptions = [
-  "English", "Español", "Français", "Deutsch", "Italiano", "Português",
-  "日本語", "한국어", "中文", "Русский", "العربية", "हिन्दी",
-  "Bahasa Indonesia", "Tiếng Việt", "ไทย"
-];
+// Animation variants
+const tabVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 }
+};
 
 const Profile = () => {
-  // States remain the same
+  const { privacySettings, updatePrivacySettings } = usePrivacy();
+
+  // State management
   const [activeTab, setActiveTab] = useState("personal-info");
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
@@ -21,24 +25,24 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saveStatus, setSaveStatus] = useState("");
+  
+  // Privacy-related states
+  const [dataRetentionPeriod, setDataRetentionPeriod] = useState(
+    privacySettings.dataRetentionPeriod || "30days"
+  );
+  const [marketingConsent, setMarketingConsent] = useState(
+    privacySettings.marketingConsent || false
+  );
+  const [analyticsConsent, setAnalyticsConsent] = useState(
+    privacySettings.analyticsConsent || false
+  );
 
-  // Animation variants
-  const tabVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
+  const getInitials = (name) => {
+    return name
+      ? name.split(' ').map(word => word[0]).join('').toUpperCase()
+      : "?";
   };
 
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { duration: 0.3 }
-    }
-  };
-
-  // Existing functions remain the same
   const handleAvatarUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -47,9 +51,9 @@ const Profile = () => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          // Calculate new dimensions (max 500px width/height)
           let width = img.width;
           let height = img.height;
+          
           if (width > height && width > 500) {
             height = Math.round((height * 500) / width);
             width = 500;
@@ -63,7 +67,6 @@ const Profile = () => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          // Convert to base64 with reduced quality
           const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
           setAvatar(compressedImage);
         };
@@ -93,14 +96,20 @@ const Profile = () => {
         }
       });
 
-      const profileData = response.data;
-      setName(profileData.name || "");
-      setAge(profileData.age || "");
-      setLanguage(profileData.language || "English");
-      setConversationStyle(profileData.conversationStyle || "empathetic");
-      setNotificationPreference(profileData.notificationPreference || "daily");
-      if (profileData.avatar) setAvatar(profileData.avatar);
-      
+      if (response.data.success) {
+        const profileData = response.data.data;
+        setName(profileData.name || "");
+        setAge(profileData.age || "");
+        setLanguage(profileData.language || "English");
+        setConversationStyle(profileData.conversationStyle || "empathetic");
+        setNotificationPreference(profileData.notificationPreference || "daily");
+        if (profileData.avatar) setAvatar(profileData.avatar);
+        
+        // Update privacy settings
+        setMarketingConsent(profileData.marketingConsent || false);
+        setAnalyticsConsent(profileData.analyticsConsent || false);
+        setDataRetentionPeriod(profileData.dataRetentionPeriod || "30days");
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
       setError("Failed to load profile data");
@@ -120,7 +129,13 @@ const Profile = () => {
       setSaveStatus("Saving...");
       const token = await currentUser.getIdToken();
       
-      await axios.put(
+      const updatedPrivacySettings = {
+        marketingConsent,
+        analyticsConsent,
+        dataRetentionPeriod
+      };
+
+      const response = await axios.put(
         "http://localhost:5000/api/profile",
         {
           name,
@@ -128,7 +143,8 @@ const Profile = () => {
           language,
           avatar,
           conversationStyle,
-          notificationPreference
+          notificationPreference,
+          ...updatedPrivacySettings
         },
         {
           headers: {
@@ -138,16 +154,230 @@ const Profile = () => {
         }
       );
 
-      setSaveStatus("Changes saved successfully!");
-      setTimeout(() => setSaveStatus(""), 3000);
+      if (response.data.success) {
+        updatePrivacySettings(updatedPrivacySettings);
+        setSaveStatus("Changes saved successfully!");
+        setTimeout(() => setSaveStatus(""), 3000);
+      }
     } catch (error) {
       console.error("Error saving profile:", error);
       setSaveStatus("Failed to save changes. Please try again.");
     }
   };
 
-  const getInitials = (name) => {
-    return name ? name.charAt(0).toUpperCase() : "?";
+  const handleDataDeletion = async () => {
+    if (!window.confirm("Are you sure you want to delete all your data? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+
+      const token = await currentUser.getIdToken();
+      await axios.delete("http://localhost:5000/api/profile/data", {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      alert("Your data has been successfully deleted.");
+      window.location.href = "/logout";
+    } catch (error) {
+      console.error("Error deleting data:", error);
+      alert("Failed to delete data. Please try again.");
+    }
+  };
+
+  const handleDataExport = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+
+      const token = await currentUser.getIdToken();
+      const response = await axios.get("http://localhost:5000/api/profile/export", {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'my-data.json');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      alert("Failed to export data. Please try again.");
+    }
+  };
+
+  const renderPrivacyTab = () => (
+    <motion.div
+      variants={tabVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="profile-content"
+    >
+      <h2 className="text-2xl font-bold mb-6 text-white">Privacy Settings</h2>
+      
+      <div className="space-y-6">
+        <div className="profile-form-group">
+          <label className="profile-label">Data Retention Period</label>
+          <select
+            value={dataRetentionPeriod}
+            onChange={(e) => setDataRetentionPeriod(e.target.value)}
+            className="profile-select"
+          >
+            <option value="30days">30 Days</option>
+            <option value="90days">90 Days</option>
+            <option value="1year">1 Year</option>
+          </select>
+        </div>
+
+        <div className="profile-form-group">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={marketingConsent}
+              onChange={(e) => setMarketingConsent(e.target.checked)}
+              className="form-checkbox"
+            />
+            <span className="text-white">Receive marketing communications</span>
+          </label>
+        </div>
+
+        <div className="profile-form-group">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={analyticsConsent}
+              onChange={(e) => setAnalyticsConsent(e.target.checked)}
+              className="form-checkbox"
+            />
+            <span className="text-white">Allow usage analytics</span>
+          </label>
+        </div>
+
+        <div className="space-y-4 mt-8">
+          <button
+            onClick={handleDataExport}
+            className="w-full p-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Export My Data
+          </button>
+          <button
+            onClick={handleDataDeletion}
+            className="w-full p-3 bg-red-600 text-white rounded hover:bg-red-700 transition"
+          >
+            Delete My Data
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  const renderPreferencesTab = () => (
+    <motion.div
+      variants={tabVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="profile-content"
+    >
+      <h2 className="text-2xl font-bold mb-6 text-white">Preferences</h2>
+      <div className="profile-form-group">
+        <label className="profile-label">Conversation Style</label>
+        <select
+          value={conversationStyle}
+          onChange={(e) => setConversationStyle(e.target.value)}
+          className="profile-select"
+        >
+          <option value="empathetic">Empathetic</option>
+          <option value="direct">Direct</option>
+          <option value="professional">Professional</option>
+          <option value="friendly">Friendly</option>
+          <option value="casual">Casual</option>
+        </select>
+      </div>
+      <div className="profile-form-group">
+        <label className="profile-label">Notifications</label>
+        <select
+          value={notificationPreference}
+          onChange={(e) => setNotificationPreference(e.target.value)}
+          className="profile-select"
+        >
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+    </motion.div>
+  );
+
+  const renderPersonalInfoTab = () => (
+    <motion.div
+      variants={tabVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="profile-content"
+    >
+      <h2 className="text-2xl font-bold mb-6 text-white">Personal Information</h2>
+      <div className="profile-form-group">
+        <label className="profile-label">Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="profile-input"
+          placeholder="Enter your name"
+        />
+      </div>
+      <div className="profile-form-group">
+        <label className="profile-label">Age</label>
+        <input
+          type="number"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          className="profile-input"
+          placeholder="Enter your age"
+        />
+      </div>
+      <div className="profile-form-group">
+        <label className="profile-label">Language</label>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="profile-select"
+        >
+          {["English", "Español", "Français", "Deutsch", "Italiano", "Português",
+            "日本語", "한국어", "中文", "Русский", "العربية", "हिन्दी"].map((lang) => (
+            <option key={lang} value={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
+    </motion.div>
+  );
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "personal-info":
+        return renderPersonalInfoTab();
+      case "preferences":
+        return renderPreferencesTab();
+      case "privacy":
+        return renderPrivacyTab();
+      default:
+        return null;
+    }
   };
 
   if (loading) {
@@ -166,131 +396,9 @@ const Profile = () => {
     );
   }
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "personal-info":
-        return (
-          <motion.div
-            variants={tabVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="profile-content"
-          >
-            <h2 className="text-2xl font-bold mb-6 text-white">Personal Information</h2>
-            <div className="profile-form-group">
-              <label className="profile-label">Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="profile-input"
-                placeholder="Enter your name"
-              />
-            </div>
-            <div className="profile-form-group">
-              <label className="profile-label">Age</label>
-              <input
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="profile-input"
-                placeholder="Enter your age"
-              />
-            </div>
-            <div className="profile-form-group">
-              <label className="profile-label">Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="profile-select"
-              >
-                {languageOptions.map((lang) => (
-                  <option key={lang} value={lang}>{lang}</option>
-                ))}
-              </select>
-            </div>
-          </motion.div>
-        );
-
-      case "preferences":
-        return (
-          <motion.div
-            variants={tabVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="profile-content"
-          >
-            <h2 className="text-2xl font-bold mb-6 text-white">Preferences</h2>
-            <div className="profile-form-group">
-              <label className="profile-label">Conversation Style</label>
-              <select
-                value={conversationStyle}
-                onChange={(e) => setConversationStyle(e.target.value)}
-                className="profile-select"
-              >
-                <option value="empathetic">Empathetic</option>
-                <option value="direct">Direct</option>
-                <option value="professional">Professional</option>
-                <option value="friendly">Friendly</option>
-                <option value="casual">Casual</option>
-              </select>
-            </div>
-            <div className="profile-form-group">
-              <label className="profile-label">Notifications</label>
-              <select
-                value={notificationPreference}
-                onChange={(e) => setNotificationPreference(e.target.value)}
-                className="profile-select"
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="none">None</option>
-              </select>
-            </div>
-          </motion.div>
-        );
-
-      // Other cases remain similar but with updated styling classes
-      case "mood-insights":
-        return (
-          <motion.div
-            variants={tabVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="profile-content"
-          >
-            <h2 className="text-2xl font-bold mb-6 text-white">Mood Insights</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-opacity-20 bg-white backdrop-blur-lg rounded-xl p-6">
-                <h4 className="text-white font-medium">Weekly Average</h4>
-                <p className="text-2xl font-bold text-[#FF6F61]">Positive</p>
-              </div>
-              <div className="bg-opacity-20 bg-white backdrop-blur-lg rounded-xl p-6">
-                <h4 className="text-white font-medium">Monthly Progress</h4>
-                <p className="text-2xl font-bold text-[#FF6F61]">↑ 15%</p>
-              </div>
-              <div className="bg-opacity-20 bg-white backdrop-blur-lg rounded-xl p-6">
-                <h4 className="text-white font-medium">Consistency</h4>
-                <p className="text-2xl font-bold text-[#FF6F61]">High</p>
-              </div>
-            </div>
-          </motion.div>
-        );
-
-      // Add other cases with similar styling updates...
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="profile-page">
       <div className="profile-container">
-        {/* Profile Header */}
         <div className="profile-header">
           <div className="flex items-center">
             <div className="profile-avatar-container">
@@ -319,9 +427,8 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
         <div className="profile-tabs">
-          {["Personal Info", "Preferences", "Mood Insights", "Achievements", "Activity Log", "Security"].map((tab) => (
+          {["Personal Info", "Preferences", "Privacy"].map((tab) => (
             <button
               key={tab}
               className={`profile-tab ${activeTab === tab.toLowerCase().replace(" ", "-") ? "active" : ""}`}
@@ -331,23 +438,28 @@ const Profile = () => {
             </button>
           ))}
         </div>
-
-        {/* Main Content */}
         <AnimatePresence mode="wait">
           {renderTabContent()}
         </AnimatePresence>
 
-        {/* Save Status */}
         {saveStatus && (
-          <div className={`profile-status ${saveStatus.includes("Failed") ? "error" : "success"}`}>
+          <div 
+            className={`profile-status mt-4 p-4 rounded-lg text-center ${
+              saveStatus.includes("Failed") ? "bg-red-500/10 text-red-400" : "bg-green-500/10 text-green-400"
+            }`}
+          >
             {saveStatus}
           </div>
         )}
 
-        {/* Save Button */}
-        <button className="profile-save-btn" onClick={handleSave}>
+        <motion.button 
+          className="profile-save-btn w-full mt-6 bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 px-6 rounded-lg hover:opacity-90 transition-opacity"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleSave}
+        >
           Save Changes
-        </button>
+        </motion.button>
       </div>
     </div>
   );

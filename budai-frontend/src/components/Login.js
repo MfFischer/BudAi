@@ -71,7 +71,7 @@ const Login = () => {
 
         <button 
           onClick={() => setIsRegistering(!isRegistering)} 
-          className="text-sm text-gray-400 mt-4 hover:text-[#FF6F61]"
+          className="auth-switch-button"
         >
           {isRegistering ? "Already have an account? Sign in" : "Need an account? Sign up"}
         </button>

@@ -1,4 +1,5 @@
 const { sendMessageToGemini } = require("../utils/apiHelpers");
+const { db } = require('../config/firebase');
 
 // Array of 30 manifestation quotes
 const manifestationQuotes = [
@@ -131,10 +132,10 @@ const getDailyQuote = () => {
   return manifestationQuotes[dayOfMonth % manifestationQuotes.length];
 };
 
-const suggestActivities = async (emotion, userMessage) => {
+const suggestActivities = async (uid, emotion = {}, userMessage = "") => {
   try {
     const prompt = `
-      You are an emotionally intelligent AI companion. Based on the user's emotional state (${emotion.dominantEmotion}) 
+      You are an emotionally intelligent AI companion. Based on the user's emotional state (${emotion.dominantEmotion || 'neutral'}) 
       and their message: "${userMessage}", provide personalized activity suggestions.
       
       Respond ONLY with a JSON object in this exact format, with no additional text or backticks:
@@ -157,20 +158,17 @@ const suggestActivities = async (emotion, userMessage) => {
         ],
         "journalingPrompt": "A thoughtful journaling prompt related to their current state"
       }
-      
-      Make all suggestions specific, actionable, and compassionate.
     `;
 
     const result = await sendMessageToGemini(prompt);
-    
-    // Clean up the response to ensure it's valid JSON
     const cleanResult = result.trim().replace(/^```json\s*|\s*```$/g, '');
     const suggestions = JSON.parse(cleanResult);
-    
-    // Add daily quote
     const dailyQuote = getDailyQuote();
+
     return {
-      ...suggestions,
+      dailySuggestions: suggestions.dailySuggestions,
+      mindfulnessActivities: suggestions.mindfulnessActivities,
+      journalingPrompt: suggestions.journalingPrompt,
       motivationalQuote: dailyQuote.quote,
       quoteTheme: dailyQuote.theme,
       quoteDate: new Date().toLocaleDateString()
@@ -178,6 +176,20 @@ const suggestActivities = async (emotion, userMessage) => {
 
   } catch (error) {
     console.error("Error suggesting activities:", error);
+    
+    // Check if error is related to API quota
+    if (error.message?.includes('RESOURCE_EXHAUSTED') || 
+        error.message?.includes('quota') || 
+        error.message?.includes('rate limit')) {
+      throw {
+        status: 429,
+        message: 'Free messaging limit reached',
+        resetTime: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
+      };
+    }
+
+    // For other errors, return default suggestions
+    const dailyQuote = getDailyQuote();
     return {
       dailySuggestions: [
         {

@@ -1,6 +1,7 @@
 /* Global Styles */
 body {
   margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
   background: linear-gradient(-45deg, #5f1e72, #023b86);
   background-size: 400% 400%;
@@ -12,6 +13,10 @@ body {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+#root {
+  min-height: 100vh;
 }
 
 /* Navbar */
@@ -328,4 +333,759 @@ body {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+.auth-link {
+  color: #FF6F61 !important;
+  font-weight: 500;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #FF6F61;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.logout-button:hover {
+  color: #ff5252;
+}
+
+@media (max-width: 768px) {
+  .auth-link,
+  .logout-button {
+    margin-top: 10px;
+  }
+}
+.profile-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(-45deg, #5f1e72, #023b86);
+}
+
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: rgba(26, 26, 46, 0.9);
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  backdrop-filter: blur(10px); /* For other modern browsers */
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.profile-header {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+}
+
+.profile-avatar-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #2D5D7C;
+  border: 3px solid #FF6F61;
+  color: white;
+  font-size: 2.5rem;
+}
+
+.profile-edit-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 32px;
+  height: 32px;
+  background: #FF6F61;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.profile-edit-icon:hover {
+  transform: scale(1.1);
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+}
+
+.profile-tab {
+  padding: 0.75rem 1.5rem;
+  background: rgba(45, 93, 124, 0.3);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.profile-tab.active {
+  background: #FF6F61;
+  transform: translateY(-2px);
+}
+
+.profile-content {
+  background: rgba(45, 93, 124, 0.2);
+  padding: 2rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+}
+
+.profile-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.profile-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: white;
+  font-weight: 500;
+}
+
+.profile-input,
+.profile-select {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(45, 93, 124, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.profile-input:focus,
+.profile-select:focus {
+  outline: none;
+  border-color: #FF6F61;
+  background: rgba(45, 93, 124, 0.5);
+}
+
+.profile-save-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #FF6F61, #FF8F61);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
+}
+
+.profile-status {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+}
+
+.profile-status.success {
+  background: rgba(72, 187, 120, 0.2);
+}
+
+.profile-status.error {
+  background: rgba(245, 101, 101, 0.2);
+}
+
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem;
+  }
+  
+  .profile-container {
+    padding: 1rem;
+  }
+  
+  .profile-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .profile-header {
+    padding: 1rem;
+  }
+}
+/* Login Page Styles */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(-45deg, #5f1e72, #023b86);
+  animation: gradientAnimation 10s ease infinite;
+}
+
+.login-card {
+  background: rgba(26, 26, 46, 0.9);
+  padding: 40px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.login-logo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  border: 3px solid #FF6F61;
+}
+
+.login-card h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #FF6F61, #FF8F61);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-card p {
+  color: #E0E0E0;
+  margin-bottom: 24px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.login-form input {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(45, 93, 124, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #FF6F61;
+  background: rgba(45, 93, 124, 0.5);
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #FF6F61, #FF8F61);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.google-button {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover,
+.google-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 16px;
+  color: #E0E0E0;
+  font-size: 14px;
+}
+
+.error-message {
+  color: #FF6F61;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.google-button img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Animation for background gradient */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+/* Add these styles to your existing login styles */
+.auth-switch-button {
+  background: none;
+  border: none;
+  color: #E0E0E0;
+  font-size: 14px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+  text-decoration: underline;
+}
+
+.auth-switch-button:hover {
+  color: #FF6F61;
+}
+
+/* Update login form style to accommodate registration fields */
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(45, 93, 124, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.login-form input[type="text"]:focus,
+.login-form input[type="email"]:focus,
+.login-form input[type="password"]:focus {
+  outline: none;
+  border-color: #FF6F61;
+  background: rgba(45, 93, 124, 0.5);
+}
+
+/* Style for verification message */
+.verification-message {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+
+/* Update existing components to accommodate demo status */
+.chat-container {
+  padding-top: 1rem;
+}
+
+.profile-container .demo-status-container {
+  margin-bottom: 2rem;
+}
+
+
+/* Cookie Consent Modal Styles */
+.cookie-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  -webkit-backdrop-filter: blur(4px); /* For Safari support */
+  backdrop-filter: blur(4px);
+}
+
+.cookie-modal {
+  background: white;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.cookie-modal-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+}
+
+.cookie-modal-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cookie-tab {
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.cookie-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.cookie-modal-body {
+  padding: 1.5rem;
+}
+
+.cookie-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cookie-option:last-child {
+  border-bottom: none;
+}
+
+.cookie-option-content h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.cookie-option-content p {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.cookie-modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background-color: #f9fafb;
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #2563eb;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(16px);
+}
+
+/* Cookie Modal Styles */
+.cookie-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.cookie-modal {
+  background: white;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.cookie-modal-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+}
+
+.cookie-modal-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cookie-tab {
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  flex: 1;
+  text-align: center;
+}
+
+.cookie-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.cookie-modal-body {
+  padding: 1.5rem;
+}
+
+.cookie-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.cookie-option:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.cookie-option-content h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.cookie-option-content p {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.cookie-modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background-color: #f9fafb;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 2.5rem;
+  height: 1.5rem;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  transition: .4s;
+  border-radius: 1.5rem;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 1.25rem;
+  width: 1.25rem;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #2563eb;
+}
+
+input:disabled + .toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(1rem);
+}
+
+/* Button Styles */
+.cookie-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.cookie-button-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.cookie-button-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.cookie-button-secondary {
+  background-color: white;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+.cookie-button-secondary:hover {
+  background-color: #f9fafb;
+}
+
+/* Responsive Styles */
+@media (max-width: 640px) {
+  .cookie-modal {
+    width: 95%;
+    max-height: 95vh;
+    margin: 1rem;
+  }
+
+  .cookie-modal-footer {
+    flex-direction: column;
+  }
+
+  .cookie-button {
+    width: 100%;
+  }
+
+  .cookie-tab {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+/* Details Tab Styles */
+.cookie-details {
+  padding: 1rem;
+}
+
+.cookie-details h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.cookie-details p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.cookie-details-section {
+  margin-bottom: 1.25rem;
+}
+
+.cookie-details-section h4 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.cookie-details-section p {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
 }
