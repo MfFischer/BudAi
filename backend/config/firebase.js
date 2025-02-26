@@ -4,7 +4,11 @@ const path = require("path");
 function getFirebaseAdmin() {
   if (!admin.apps.length) {
     try {
-      const serviceAccount = require(path.join(__dirname, "../firebase-key.json"));
+      // Use environment variable if available (Heroku), fallback to local file (dev)
+      const serviceAccount = process.env.FIREBASE_CREDENTIALS
+        ? JSON.parse(process.env.FIREBASE_CREDENTIALS)
+        : require(path.join(__dirname, "../firebase-key.json"));
+
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
       });
@@ -26,7 +30,10 @@ const db = firebaseAdmin.firestore();
 const testFirestore = async () => {
   try {
     const docRef = db.collection("test").doc("testDoc");
-    await docRef.set({ message: "Firestore is working!", timestamp: admin.firestore.FieldValue.serverTimestamp() });
+    await docRef.set({ 
+      message: "Firestore is working!", 
+      timestamp: admin.firestore.FieldValue.serverTimestamp() 
+    });
     console.log("Firestore test document written successfully");
   } catch (error) {
     console.error("Error accessing Firestore:", error);
