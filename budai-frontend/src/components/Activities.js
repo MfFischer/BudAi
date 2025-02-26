@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { auth } from "../firebase/config";
 import { usePrivacy } from '../contexts/PrivacyContext';
+import "./Activities.css";
 
 const Activities = ({ onApiLimit }) => {
   const { privacySettings } = usePrivacy();
@@ -172,13 +173,13 @@ const Activities = ({ onApiLimit }) => {
           
           {suggestions?.motivationalQuote && (
             <motion.div 
-              className="quote-section bg-white/5 backdrop-blur-sm rounded-xl p-6 mb-8"
+              className="quote-card"
               initial={{ y: -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <p className="text-xl text-white mb-2">{suggestions.motivationalQuote}</p>
-              <p className="text-sm text-gray-400">Theme: {suggestions.quoteTheme}</p>
+              <p className="quote">{suggestions.motivationalQuote}</p>
+              <p className="quote-theme">Theme: {suggestions.quoteTheme}</p>
             </motion.div>
           )}
 

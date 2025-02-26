@@ -32,12 +32,28 @@ budai/
 │   │   ├── components/
 │   │   │   ├── Home.js
 │   │   │   ├── Chat.js
+│   │   │   ├── ChatMessage.js
+│   │   │   ├── ChatInput.js
 │   │   │   ├── Activities.js
 │   │   │   ├── Profile.js
-│   │   │   └── Navbar.js
+│   │   │   ├── Navbar.js
+│   │   │   ├── CookieConsent.js
+│   │   │   ├── CookieSettings.js
+│   │   │   ├── PrivacyPolicy.js
+│   │   │   └── PrivacyCenter.js
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.js
+│   │   │   ├── ChatContext.js
+│   │   │   └── PrivacyContext.js
+│   │   ├── hooks/
+│   │   │   └── useChat.js
 │   │   ├── services/
 │   │   │   ├── api.js
-│   │   │   └── gemini.js
+│   │   │   ├── gemini.js
+│   │   │   └── chatService.js
+│   │   ├── utils/
+│   │   │   ├── formatTimestamp.js
+│   │   │   └── handleApiError.js
 │   │   ├── App.js
 │   │   ├── App.css
 │   │   └── index.js

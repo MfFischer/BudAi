@@ -1,27 +1,25 @@
 import axios from "axios";
 
-const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+// Backend API URL (Heroku)
+const BACKEND_API_URL = "https://budai-backend-66e5de8d33a8.herokuapp.com";
 
 export const sendMessageToGemini = async (message) => {
   try {
     const response = await axios.post(
-      `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
+      `${BACKEND_API_URL}/api/chat`,
+      { message }, // Send message as JSON body
       {
-        contents: [
-          {
-            parts: [
-              {
-                text: message,
-              },
-            ],
-          },
-        ],
+        headers: {
+          "Content-Type": "application/json",
+          // Add Authorization header if your backend requires it (e.g., Firebase Auth token)
+          // "Authorization": `Bearer ${yourAuthToken}`,
+        },
       }
     );
-    return response.data.candidates[0].content.parts[0].text;
+    // Adjust based on your backend's response structure
+    return response.data.message || "Sorry, no response from backend.";
   } catch (error) {
-    console.error("Error sending message to Gemini:", error);
+    console.error("Error sending message to backend:", error);
     return "Sorry, I couldn't process your request.";
   }
 };

@@ -6,7 +6,8 @@ const analyzeEmotion = async (text) => {
   try {
     const prompt = `Analyze the emotional content of this text and return only one word representing the dominant emotion (e.g., happy, sad, angry, neutral, excited, anxious): "${text}"`;
     
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Update the model name here
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
     const result = await model.generateContent(prompt);
     const emotion = await result.response.text();
     
