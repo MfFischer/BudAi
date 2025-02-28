@@ -40,13 +40,23 @@ const globalLimiter = rateLimit({
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', FRONTEND_URL], // Allow localhost for development
+  origin: [
+    'http://localhost:3000',         // Local development
+    'https://budai-ef5fa.web.app',   // Your Firebase production URL
+    'https://budai-ef5fa.firebaseapp.com', // Alternative Firebase domain
+    FRONTEND_URL                     // From environment variable
+  ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(morgan('dev')); // More concise logs for development
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for simplicity in development
+  crossOriginEmbedderPolicy: false // Allow embedding for Firebase apps
+}));
 app.use(globalLimiter);
 
 // Safely load route modules with error handling
