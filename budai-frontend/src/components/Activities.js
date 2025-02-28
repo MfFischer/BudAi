@@ -14,6 +14,11 @@ const Activities = ({ onApiLimit }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // The API endpoint base - use environment variable or default
+  const API_BASE = process.env.REACT_APP_API_URL || window.location.hostname === 'localhost' 
+    ? 'http://localhost:5001' 
+    : '';
+
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
@@ -26,7 +31,7 @@ const Activities = ({ onApiLimit }) => {
     
         const token = await user.getIdToken();
         const response = await axios.get(
-          `http://localhost:5000/api/activities/suggestions/${user.uid}`,
+          `${API_BASE}/api/activities/suggestions/${user.uid}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -46,7 +51,7 @@ const Activities = ({ onApiLimit }) => {
         // Handle API limit
         if (error.response?.status === 429) {
           const resetTime = error.response.data.resetTime;
-          onApiLimit(resetTime);
+          onApiLimit && onApiLimit(resetTime);
           setError("Free messaging limit reached. Service will reset at midnight Pacific Time.");
         } else {
           // If API fails, set default suggestions
@@ -93,7 +98,7 @@ const Activities = ({ onApiLimit }) => {
     };
 
     fetchSuggestions();
-  }, [onApiLimit]);
+  }, [API_BASE, onApiLimit]);
 
   const handleJournalSubmit = async () => {
     if (!journalEntry.trim()) return;
@@ -104,11 +109,12 @@ const Activities = ({ onApiLimit }) => {
       const token = await user.getIdToken();
       
       const response = await axios.post(
-        `http://localhost:5000/api/activities/journal/${user.uid}`,
+        `${API_BASE}/api/activities/journal/${user.uid}`,
         { entry: journalEntry },
         {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -122,7 +128,7 @@ const Activities = ({ onApiLimit }) => {
       console.error("Error submitting journal:", error);
       if (error.response?.status === 429) {
         const resetTime = error.response.data.resetTime;
-        onApiLimit(resetTime);
+        onApiLimit && onApiLimit(resetTime);
         setError("Free messaging limit reached. Service will reset at midnight Pacific Time.");
       } else {
         setError("Failed to submit journal entry. Please try again.");
@@ -155,22 +161,22 @@ const Activities = ({ onApiLimit }) => {
     >
       {error ? (
         <motion.div 
-          className="error-message bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center"
+          className="error-message"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-red-400">{error}</p>
+          <p>{error}</p>
         </motion.div>
       ) : (
-        <div className="mb-8">
+        <div className="activities-content">
           <motion.h1 
-            className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#FF6F61] to-[#FF8F61] bg-clip-text text-transparent"
             initial={{ y: -20 }}
             animate={{ y: 0 }}
           >
             Activities
           </motion.h1>
           
+          {/* Daily Manifestation Quote Section */}
           {suggestions?.motivationalQuote && (
             <motion.div 
               className="quote-card"
@@ -187,18 +193,74 @@ const Activities = ({ onApiLimit }) => {
           {suggestions?.dailySuggestions && (
             <section className="daily-suggestions mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-white">Daily Suggestions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="activity-grid">
                 {suggestions.dailySuggestions.map((activity, index) => (
                   <motion.div
                     key={index}
-                    className="activity-card bg-white/5 backdrop-blur-sm rounded-xl p-6 hover:bg-white/10 transition-colors"
+                    className="activity-card"
                     whileHover={{ scale: 1.02 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <h3 className="text-lg font-semibold mb-2 text-white">{activity.title}</h3>
-                    <p className="text-gray-300">{activity.description}</p>
+                    <h3>{activity.title}</h3>
+                    <p>{activity.description}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Mindfulness Activities Section */}
+          {suggestions?.mindfulnessActivities && (
+            <section className="mindfulness-section mb-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">Mindfulness Activities</h2>
+              <div className="activity-grid">
+                {suggestions.mindfulnessActivities.map((activity, index) => (
+                  <motion.div
+                    key={index}
+                    className="activity-card mindfulness-card"
+                    whileHover={{ scale: 1.02 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 + 0.3 }}
+                  >
+                    <h3>{activity.title}</h3>
+                    <p className="activity-description">{activity.description}</p>
+                    {activity.duration && (
+                      <div className="activity-details">
+                        <div className="activity-duration">
+                          <span className="label">Duration:</span> {activity.duration}
+                        </div>
+                        {activity.benefits && (
+                          <div className="activity-benefits">
+                            <span className="label">Benefits:</span> {activity.benefits}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {activity.instructions && (
+                      <div className="activity-instructions">
+                        <h4>Instructions:</h4>
+                        <ol>
+                          {activity.instructions.map((step, i) => (
+                            <motion.li 
+                              key={i}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.1 + 0.5 }}
+                            >
+                              {step}
+                            </motion.li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    {activity.guidance && (
+                      <div className="activity-guidance">
+                        <p><em>{activity.guidance}</em></p>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </div>
@@ -209,14 +271,14 @@ const Activities = ({ onApiLimit }) => {
           <section className="journaling-tool">
             <h2 className="text-2xl font-semibold mb-4 text-white">Journaling Tool</h2>
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
-              <p className="text-lg text-gray-300 mb-4">
+              <p className="text-lg text-gray-300 mb-4 journaling-prompt">
                 {suggestions?.journalingPrompt || "What's on your mind today?"}
               </p>
               <textarea
                 value={journalEntry}
                 onChange={(e) => setJournalEntry(e.target.value)}
                 placeholder="Write your thoughts here..."
-                className="w-full h-32 bg-white/10 rounded-lg p-4 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6F61] mb-4"
+                className="w-full h-32 bg-white/10 rounded-lg p-4 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6F61]"
                 disabled={loading}
               />
               <motion.button
@@ -224,13 +286,13 @@ const Activities = ({ onApiLimit }) => {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleJournalSubmit}
                 disabled={loading || !journalEntry.trim()}
-                className="w-full bg-gradient-to-r from-[#FF6F61] to-[#FF8F61] text-white rounded-lg py-3 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-[#FF6F61] to-[#FF8F61] text-white rounded-lg py-3 font-medium disabled:opacity-50 disabled:cursor-not-allowed mt-4"
               >
                 {loading ? 'Saving...' : 'Save Entry'}
               </motion.button>
               {journalResponse && (
                 <motion.div 
-                  className="mt-4 text-center text-gray-300"
+                  className="mt-4 text-center text-gray-300 journal-response"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >

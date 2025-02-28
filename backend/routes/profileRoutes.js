@@ -2,31 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { admin, db } = require("../config/firebase");
 
-// Verify Firebase token middleware
-const verifyToken = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split('Bearer ')[1];
-    if (!token) {
-      return res.status(401).json({ 
-        success: false,
-        error: 'No token provided' 
-      });
-    }
-
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    req.user = decodedToken;
-    next();
-  } catch (error) {
-    console.error("Auth error:", error);
-    res.status(401).json({ 
-      success: false,
-      error: 'Invalid token' 
-    });
-  }
-};
-
 // Get profile
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     console.log("Getting profile for user:", req.user.uid);
     
@@ -71,7 +48,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // Update profile
-router.put("/", verifyToken, async (req, res) => {
+router.put("/", async (req, res) => {
   try {
     console.log("Updating profile for user:", req.user.uid);
     const {
@@ -125,7 +102,7 @@ router.put("/", verifyToken, async (req, res) => {
 });
 
 // Export data endpoint
-router.get("/export", verifyToken, async (req, res) => {
+router.get("/export", async (req, res) => {
   try {
     const userDoc = await db.collection("users").doc(req.user.uid).get();
     const userData = userDoc.data();
@@ -160,7 +137,7 @@ router.get("/export", verifyToken, async (req, res) => {
 });
 
 // Delete data endpoint
-router.delete("/data", verifyToken, async (req, res) => {
+router.delete("/data", async (req, res) => {
   try {
     // Delete user profile
     await db.collection("users").doc(req.user.uid).delete();

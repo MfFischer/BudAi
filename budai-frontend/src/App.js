@@ -11,7 +11,7 @@ import CookieSettings from './components/CookieSettings';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import PrivacyCenter from './components/PrivacyCenter';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { PrivacyProvider } from "./contexts/PrivacyContext";
+import { PrivacyProvider, usePrivacy } from "./contexts/PrivacyContext";
 import "./App.css";
 
 // Loading Component
@@ -49,44 +49,38 @@ const ApiLimitModal = ({ isOpen, resetTime }) => {
   );
 };
 
-// Private route wrapper
+// Private route wrapper with consent check
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const { privacySettings } = usePrivacy();
+  
+  // Only show loading screen if auth is still loading
   if (loading) return <LoadingScreen />;
-  return user ? children : <Navigate to="/login" />;
+  
+  // Redirect to login if not authenticated
+  if (!user) return <Navigate to="/login" />;
+  
+  // If authenticated, render the children components
+  return children;
 };
 
-function App() {
-  // State for managing cookie preferences and UI
-  const [cookiePreferences, setCookiePreferences] = useState({
-    necessary: true,
-    preferences: false,
-    statistics: false,
-    marketing: false
-  });
-  const [showCookieConsent, setShowCookieConsent] = useState(true);
+function AppContent() {
+  const { privacySettings, updatePrivacySettings } = usePrivacy();
+  const { user } = useAuth();
+  
+  // State for UI management
   const [showCookieSettings, setShowCookieSettings] = useState(false);
   const [loading, setLoading] = useState(true);
   const [apiLimitReached, setApiLimitReached] = useState(false);
   const [apiResetTime, setApiResetTime] = useState(null);
+  
+  // Determine if we need to show the consent banner
+  // Only show if necessary cookies are not accepted AND user is logged in
+  const showCookieConsent = user && !privacySettings.necessary;
 
-  // Load saved cookie preferences on mount
   useEffect(() => {
-    try {
-      const savedConsent = localStorage.getItem('cookieConsent');
-      if (savedConsent) {
-        const parsedConsent = JSON.parse(savedConsent);
-        setCookiePreferences(prev => ({
-          ...prev,
-          ...parsedConsent
-        }));
-        setShowCookieConsent(false);
-      }
-    } catch (error) {
-      console.error('Error loading cookie preferences:', error);
-    } finally {
-      setLoading(false);
-    }
+    // No additional loading needed since PrivacyContext handles initial loading
+    setLoading(false);
   }, []);
 
   // Handle API limit events
@@ -97,139 +91,130 @@ function App() {
 
   // Cookie consent handlers
   const handleAcceptAll = () => {
-    const allAccepted = {
+    updatePrivacySettings({
+      ...privacySettings,
       necessary: true,
       preferences: true,
-      statistics: true,
-      marketing: true,
-      timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
-    setCookiePreferences(allAccepted);
-    setShowCookieConsent(false);
+      marketingConsent: true,
+      analyticsConsent: true
+    });
     setShowCookieSettings(false);
   };
 
   const handleSavePreferences = (preferences) => {
-    const updatedPreferences = {
+    updatePrivacySettings({
       ...preferences,
-      timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('cookieConsent', JSON.stringify(updatedPreferences));
-    setCookiePreferences(updatedPreferences);
-    setShowCookieConsent(false);
+      necessary: true // Necessary cookies are always required
+    });
     setShowCookieSettings(false);
   };
 
   const handleRejectAll = () => {
-    const minimal = {
-      necessary: true,
+    updatePrivacySettings({
+      ...privacySettings,
+      necessary: true, // Necessary cookies are always required
       preferences: false,
-      statistics: false,
-      marketing: false,
-      timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('cookieConsent', JSON.stringify(minimal));
-    setCookiePreferences(minimal);
-    setShowCookieConsent(false);
+      marketingConsent: false,
+      analyticsConsent: false
+    });
     setShowCookieSettings(false);
   };
 
   const handleShowSettings = () => {
     setShowCookieSettings(true);
-    setShowCookieConsent(false);
   };
 
   const handleCloseSettings = () => {
     setShowCookieSettings(false);
-    if (!localStorage.getItem('cookieConsent')) {
-      setShowCookieConsent(true);
-    }
   };
 
   if (loading) return <LoadingScreen />;
 
   return (
+    <Router>
+      <div className="App relative min-h-screen bg-gradient-to-br from-[#5f1e72] to-[#023b86]">
+        <div className={`flex flex-col min-h-screen ${showCookieConsent ? 'pb-32' : ''}`}>
+          <Navbar onShowCookieSettings={handleShowSettings} />
+          
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/privacy-center" element={<PrivacyCenter />} />
+              
+              {/* Protected Routes */}
+              <Route 
+                path="/chat" 
+                element={
+                  <PrivateRoute>
+                    <Chat onApiLimit={handleApiLimit} />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/activities" 
+                element={
+                  <PrivateRoute>
+                    <Activities onApiLimit={handleApiLimit} />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/privacy-settings" 
+                element={
+                  <PrivateRoute>
+                    <PrivacyCenter />
+                  </PrivateRoute>
+                } 
+              />
+            </Routes>
+          </main>
+
+          {/* Cookie Consent Banner - only show if necessary cookies not accepted */}
+          {showCookieConsent && (
+            <CookieConsent 
+              onAccept={handleAcceptAll}
+              onShowSettings={handleShowSettings}
+              onReject={handleRejectAll}
+            />
+          )}
+
+          {/* Cookie Settings Modal */}
+          {showCookieSettings && (
+            <CookieSettings 
+              preferences={privacySettings}
+              onClose={handleCloseSettings}
+              onSave={handleSavePreferences}
+              onAcceptAll={handleAcceptAll}
+              onRejectAll={handleRejectAll}
+            />
+          )}
+
+          {/* API Limit Modal */}
+          <ApiLimitModal 
+            isOpen={apiLimitReached} 
+            resetTime={apiResetTime}
+          />
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+function App() {
+  return (
     <AuthProvider>
       <PrivacyProvider>
-        <Router>
-          <div className="App relative min-h-screen bg-gradient-to-br from-[#5f1e72] to-[#023b86]">
-            <div className={`flex flex-col min-h-screen ${showCookieConsent ? 'pb-32' : ''}`}>
-              <Navbar onShowCookieSettings={handleShowSettings} />
-              
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  
-                  {/* Protected Routes */}
-                  <Route 
-                    path="/chat" 
-                    element={
-                      <PrivateRoute>
-                        <Chat onApiLimit={handleApiLimit} />
-                      </PrivateRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/activities" 
-                    element={
-                      <PrivateRoute>
-                        <Activities onApiLimit={handleApiLimit} />
-                      </PrivateRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/profile" 
-                    element={
-                      <PrivateRoute>
-                        <Profile />
-                      </PrivateRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/privacy-settings" 
-                    element={
-                      <PrivateRoute>
-                        <PrivacyCenter />
-                      </PrivateRoute>
-                    } 
-                  />
-                </Routes>
-              </main>
-
-              {/* Cookie Consent Banner */}
-              {showCookieConsent && (
-                <CookieConsent 
-                  onAccept={handleAcceptAll}
-                  onShowSettings={handleShowSettings}
-                  onReject={handleRejectAll}
-                />
-              )}
-
-              {/* Cookie Settings Modal */}
-              {showCookieSettings && (
-                <CookieSettings 
-                  preferences={cookiePreferences}
-                  onClose={handleCloseSettings}
-                  onSave={handleSavePreferences}
-                  onAcceptAll={handleAcceptAll}
-                  onRejectAll={handleRejectAll}
-                />
-              )}
-
-              {/* API Limit Modal */}
-              <ApiLimitModal 
-                isOpen={apiLimitReached} 
-                resetTime={apiResetTime}
-              />
-            </div>
-          </div>
-        </Router>
+        <AppContent />
       </PrivacyProvider>
     </AuthProvider>
   );

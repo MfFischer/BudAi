@@ -1,80 +1,95 @@
-const { suggestActivities } = require('../services/activitySuggestion');
+const { suggestActivities } = require('../services/activitySuggestions');
 const { db } = require('../config/firebase');
 
-exports.getActivitySuggestions = async (req, res) => {
+/**
+ * Get activity suggestions based on user's recent emotion data
+ */
+const getActivitySuggestions = async (req, res) => {
   try {
     const { uid } = req.params;
-
-    // Get user's recent chat messages
-    const recentChats = await db.collection("chats")
-      .where("uid", "==", uid)
-      .orderBy("timestamp", "desc")
-      .limit(5)
+    
+    // Get the user's most recent chat data to extract emotion
+    const chatSnapshot = await db.collection('user_chats')
+      .where('uid', '==', uid)
+      .orderBy('timestamp', 'desc')
+      .limit(1)
       .get();
-
-    const latestChat = recentChats.docs[0]?.data();
-    const recentEmotion = {
-      dominantEmotion: latestChat?.emotion || "neutral"
-    };
-    const recentMessage = latestChat?.message || "";
-
-    try {
-      const suggestions = await suggestActivities(uid, recentEmotion, recentMessage);
-      res.json({
-        success: true,
-        data: suggestions // This will now include all the required fields
-      });
-    } catch (apiError) {
-      if (apiError.status === 429) {
-        return res.status(429).json({
-          success: false,
-          error: 'Free messaging limit reached',
-          resetTime: apiError.resetTime,
-          message: 'The free messaging tier has been exhausted. Services will reset at midnight Pacific Time.'
-        });
-      }
-      throw apiError;
+      
+    let emotionData = { dominantEmotion: 'neutral' };
+    let userMessage = '';
+    
+    if (!chatSnapshot.empty) {
+      const chatData = chatSnapshot.docs[0].data();
+      emotionData = chatData.emotion || { dominantEmotion: 'neutral' };
+      userMessage = chatData.userMessage || '';
     }
-
+    
+    // Use the emotion data to get personalized suggestions
+    const suggestionData = await suggestActivities(uid, emotionData, userMessage);
+    
+    res.json({
+      success: true,
+      data: suggestionData
+    });
   } catch (error) {
     console.error("Error getting activity suggestions:", error);
+    
+    // Handle rate limit errors specifically
+    if (error.status === 429) {
+      return res.status(429).json({
+        success: false,
+        error: error.message,
+        resetTime: error.resetTime
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      error: "Failed to get suggestions",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: "Failed to get activity suggestions"
     });
   }
 };
 
-exports.submitJournalEntry = async (req, res) => {
+/**
+ * Save a journal entry for the user
+ */
+const submitJournalEntry = async (req, res) => {
   try {
     const { uid } = req.params;
     const { entry } = req.body;
-
-    if (!entry) {
+    
+    if (!entry || typeof entry !== 'string' || entry.trim() === '') {
       return res.status(400).json({
         success: false,
-        error: 'Journal entry is required'
+        error: "Journal entry cannot be empty"
       });
     }
-
-    // Save journal entry
-    await db.collection('journal_entries').add({
+    
+    // Add entry to database
+    const entryRef = await db.collection('journal_entries').add({
       uid,
       entry,
       timestamp: new Date()
     });
-
+    
     res.json({
       success: true,
-      message: "Journal entry saved successfully"
+      data: {
+        id: entryRef.id,
+        entry,
+        timestamp: new Date()
+      }
     });
-
   } catch (error) {
-    console.error('Error submitting journal entry:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Failed to save journal entry" 
+    console.error("Error submitting journal entry:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to save journal entry"
     });
   }
+};
+
+module.exports = {
+  getActivitySuggestions,
+  submitJournalEntry
 };

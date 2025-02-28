@@ -1,189 +1,63 @@
-import React, { useState } from 'react';
+// CookieConsent.js
+import React from 'react';
+import { usePrivacy } from '../contexts/PrivacyContext';
+import { Link } from 'react-router-dom';
 
-const ToggleSwitch = ({ isChecked, onChange, disabled = false }) => (
-  <label className="relative inline-flex items-center cursor-pointer">
-    <input
-      type="checkbox"
-      checked={isChecked}
-      onChange={onChange}
-      disabled={disabled}
-      className="sr-only peer"
-    />
-    <div className={`
-      w-11 h-6 
-      ${disabled ? 'bg-blue-600 cursor-not-allowed' : isChecked ? 'bg-blue-600' : 'bg-gray-200'} 
-      peer-focus:outline-none 
-      rounded-full 
-      peer 
-      peer-checked:after:translate-x-full 
-      after:content-[''] 
-      after:absolute 
-      after:top-[2px] 
-      after:left-[2px] 
-      after:bg-white 
-      after:rounded-full 
-      after:h-5 
-      after:w-5 
-      after:transition-all
-    `}></div>
-  </label>
-);
-
-const CookieConsent = ({ onAccept, onShowSettings }) => {
-  const [activeTab, setActiveTab] = useState('consent');
-  const [settings, setSettings] = useState({
-    necessary: true,
-    preferences: false,
-    statistics: false,
-    marketing: false
-  });
-
-  const handleToggle = (type) => {
-    if (type === 'necessary') return;
-    setSettings(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
-  };
+const CookieConsent = () => {
+  const { privacySettings, updatePrivacySettings } = usePrivacy();
 
   const handleAcceptAll = () => {
-    const allAccepted = {
+    updatePrivacySettings({
+      ...privacySettings,
       necessary: true,
-      preferences: true,
-      statistics: true,
-      marketing: true
-    };
-    setSettings(allAccepted);
-    onAccept(allAccepted);
+      marketingConsent: true,
+      analyticsConsent: true,
+      preferences: true
+    });
   };
 
-  const handleRejectAll = () => {
-    const allRejected = {
+  const handleAcceptNecessary = () => {
+    updatePrivacySettings({
+      ...privacySettings,
       necessary: true,
-      preferences: false,
-      statistics: false,
-      marketing: false
-    };
-    setSettings(allRejected);
-    onAccept(allRejected);
+      marketingConsent: false,
+      analyticsConsent: false,
+      preferences: false
+    });
   };
-
-  const handleSavePreferences = () => {
-    onAccept(settings);
-  };
-
-  const cookieOptions = [
-    {
-      type: 'necessary',
-      label: 'Necessary Cookies',
-      description: 'These cookies are essential for the website to function properly.',
-      disabled: true
-    },
-    {
-      type: 'preferences',
-      label: 'Preferences',
-      description: 'These cookies remember your preferences to enhance your experience.',
-      disabled: false
-    },
-    {
-      type: 'statistics',
-      label: 'Statistics',
-      description: 'Help us improve by letting us know how you use our site.',
-      disabled: false
-    },
-    {
-      type: 'marketing',
-      label: 'Marketing',
-      description: 'These cookies help us show you relevant ads on other sites.',
-      disabled: false
-    }
-  ];
 
   return (
-    <div className="cookie-modal-overlay">
-      <div className="cookie-modal">
-        <div className="cookie-modal-tabs">
-          <button
-            className={`cookie-tab ${activeTab === 'consent' ? 'active' : ''}`}
-            onClick={() => setActiveTab('consent')}
-          >
-            Consent
-          </button>
-          <button
-            className={`cookie-tab ${activeTab === 'details' ? 'active' : ''}`}
-            onClick={() => setActiveTab('details')}
-          >
-            Details
-          </button>
-        </div>
-
-        <div className="cookie-modal-body">
-          {activeTab === 'consent' ? (
-            <div className="space-y-4">
-              {cookieOptions.map(({ type, label, description, disabled }) => (
-                <div key={type} className="cookie-option">
-                  <div className="cookie-option-content">
-                    <h3>{label}</h3>
-                    <p>{description}</p>
-                  </div>
-                  <ToggleSwitch
-                    isChecked={settings[type]}
-                    onChange={() => handleToggle(type)}
-                    disabled={disabled}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="cookie-details">
-              <h3>About Our Cookies</h3>
-              <p>
-                We use cookies to improve your browsing experience and analyze our traffic. 
-                You can choose which types of cookies you want to allow.
-              </p>
-              
-              <div className="cookie-details-section">
-                <h4>Necessary Cookies</h4>
-                <p>Required for basic site functionality. These cookies are essential and cannot be disabled.</p>
-              </div>
-              
-              <div className="cookie-details-section">
-                <h4>Preference Cookies</h4>
-                <p>These cookies allow us to remember your settings and preferences.</p>
-              </div>
-              
-              <div className="cookie-details-section">
-                <h4>Statistics Cookies</h4>
-                <p>Help us understand how visitors interact with our website.</p>
-              </div>
-              
-              <div className="cookie-details-section">
-                <h4>Marketing Cookies</h4>
-                <p>Used to deliver relevant advertisements and track campaign performance.</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="cookie-modal-footer">
-          <button
-            onClick={handleRejectAll}
-            className="cookie-button cookie-button-secondary"
-          >
-            Reject All
-          </button>
-          <button
-            onClick={handleSavePreferences}
-            className="cookie-button cookie-button-secondary"
-          >
-            Save Preferences
-          </button>
-          <button
-            onClick={handleAcceptAll}
-            className="cookie-button cookie-button-primary"
-          >
-            Accept All
-          </button>
+    <div className="fixed inset-x-0 bottom-0 z-50 p-4 bg-white dark:bg-gray-800 shadow-lg">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+          <div className="mb-4 md:mb-0 md:mr-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Cookie Settings Required</h2>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
+              To use our chat service, you need to accept necessary cookies. 
+              Please visit our <Link to="/privacy-center" className="text-blue-600 hover:underline">Privacy Center</Link> to manage your cookie preferences.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleAcceptNecessary}
+              className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              Accept Necessary Only
+            </button>
+            <button
+              onClick={handleAcceptAll}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              Accept All
+            </button>
+            <Link
+              to="/privacy-center"
+              className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            >
+              Privacy Settings
+            </Link>
+          </div>
         </div>
       </div>
     </div>

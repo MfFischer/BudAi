@@ -7,6 +7,7 @@ const ChatInput = ({ onSend, isLoading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim() === "" || isLoading) return;
+    console.log("ChatInput sending:", message);
     onSend(message);
     setMessage("");
   };

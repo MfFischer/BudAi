@@ -1,45 +1,61 @@
-import axios from "axios";
-
-const BACKEND_API_URL = "https://budai-backend-66e5de8d33a8.herokuapp.com";
-
-export const fetchChatHistory = async (uid, token) => {
-  try {
-    const response = await axios.get(
-      `${BACKEND_API_URL}/api/chat/chat-history/${uid}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching chat history:", error);
-    throw error; // Let calling component handle it
-  }
-};
+// src/services/chatService.js
+import { api, authHeader } from '../utils/apiConfig';
 
 export const sendMessage = async (message, uid, token, privacySettings) => {
+  console.log("Sending message:", message);
+  
   try {
-    const response = await axios.post(
-      `${BACKEND_API_URL}/api/chat`,
-      {
-        message,
-        // uid not needed in body; backend adds it via verifyAuth
-        analyticsConsent: privacySettings.analyticsConsent,
-        marketingConsent: privacySettings.marketingConsent,
+    const response = await api.post(
+      '/api/chat',
+      { 
+        message, 
+        analyticsConsent: privacySettings?.analyticsConsent, 
+        marketingConsent: privacySettings?.marketingConsent 
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
+      authHeader(token)
     );
+    
+    console.log("Message response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error sending message:", error);
-    throw error; // Let calling component handle it
+    
+    // More detailed error logging
+    if (error.response) {
+      console.error("Response error data:", error.response.data);
+      console.error("Response error status:", error.response.status);
+    } else if (error.request) {
+      console.error("No response received:", error.request);
+    } else {
+      console.error("Request setup error:", error.message);
+    }
+    
+    throw error;
+  }
+};
+
+export const fetchChatHistory = async (uid, token) => {
+  console.log("Fetching chat history for user:", uid);
+  
+  try {
+    const response = await api.get(`/api/chat/chat-history/${uid}`, authHeader(token));
+    console.log("History response status:", response.status);
+    console.log("History data count:", response.data?.data?.length || 0);
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching history:", error);
+    
+    // More detailed error logging
+    if (error.response) {
+      console.error("Response error data:", error.response.data);
+      console.error("Response error status:", error.response.status);
+    } else if (error.request) {
+      console.error("No response received:", error.request);
+    } else {
+      console.error("Request setup error:", error.message);
+    }
+    
+    throw error;
   }
 };

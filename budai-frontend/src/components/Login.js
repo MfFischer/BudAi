@@ -12,10 +12,12 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("Login success:", result.user);
       navigate("/chat");
     } catch (error) {
       setError(error.message);
+      console.error("Login error:", error);
     }
   };
 

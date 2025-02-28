@@ -3,6 +3,7 @@ import axios from "axios";
 import { auth } from "../firebase/config";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrivacy } from '../contexts/PrivacyContext';
+import { useAuth } from "../contexts/AuthContext";
 
 // Animation variants
 const tabVariants = {
@@ -13,6 +14,7 @@ const tabVariants = {
 
 const Profile = () => {
   const { privacySettings, updatePrivacySettings } = usePrivacy();
+  const { user: authUser } = useAuth();
 
   // State management
   const [activeTab, setActiveTab] = useState("personal-info");
@@ -28,13 +30,13 @@ const Profile = () => {
   
   // Privacy-related states
   const [dataRetentionPeriod, setDataRetentionPeriod] = useState(
-    privacySettings.dataRetentionPeriod || "30days"
+    privacySettings?.dataRetentionPeriod || "30days"
   );
   const [marketingConsent, setMarketingConsent] = useState(
-    privacySettings.marketingConsent || false
+    privacySettings?.marketingConsent || false
   );
   const [analyticsConsent, setAnalyticsConsent] = useState(
-    privacySettings.analyticsConsent || false
+    privacySettings?.analyticsConsent || false
   );
 
   const getInitials = (name) => {
@@ -82,14 +84,19 @@ const Profile = () => {
 
   const fetchProfileData = async () => {
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = authUser || auth.currentUser;
       if (!currentUser) {
         setError("Please log in to view your profile");
+        setLoading(false);
         return;
       }
 
       const token = await currentUser.getIdToken();
-      const response = await axios.get("http://localhost:5000/api/profile", {
+      
+      // Use the API URL from your App.js configuration
+      const API_URL = "http://localhost:5001";
+        
+      const response = await axios.get(`${API_URL}/api/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -109,6 +116,15 @@ const Profile = () => {
         setMarketingConsent(profileData.marketingConsent || false);
         setAnalyticsConsent(profileData.analyticsConsent || false);
         setDataRetentionPeriod(profileData.dataRetentionPeriod || "30days");
+        
+        // Update privacy context
+        if (updatePrivacySettings) {
+          updatePrivacySettings({
+            marketingConsent: profileData.marketingConsent || false,
+            analyticsConsent: profileData.analyticsConsent || false,
+            dataRetentionPeriod: profileData.dataRetentionPeriod || "30days"
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -120,7 +136,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = authUser || auth.currentUser;
       if (!currentUser) {
         setError("Please log in to save changes");
         return;
@@ -129,6 +145,9 @@ const Profile = () => {
       setSaveStatus("Saving...");
       const token = await currentUser.getIdToken();
       
+      // Use the API URL from your App.js configuration
+      const API_URL = "http://localhost:5001";
+      
       const updatedPrivacySettings = {
         marketingConsent,
         analyticsConsent,
@@ -136,7 +155,7 @@ const Profile = () => {
       };
 
       const response = await axios.put(
-        "http://localhost:5000/api/profile",
+        `${API_URL}/api/profile`,
         {
           name,
           age,
@@ -155,9 +174,13 @@ const Profile = () => {
       );
 
       if (response.data.success) {
-        updatePrivacySettings(updatedPrivacySettings);
+        if (updatePrivacySettings) {
+          updatePrivacySettings(updatedPrivacySettings);
+        }
         setSaveStatus("Changes saved successfully!");
         setTimeout(() => setSaveStatus(""), 3000);
+      } else {
+        throw new Error(response.data.error || "Failed to save changes");
       }
     } catch (error) {
       console.error("Error saving profile:", error);
@@ -171,19 +194,27 @@ const Profile = () => {
     }
 
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = authUser || auth.currentUser;
       if (!currentUser) return;
 
       const token = await currentUser.getIdToken();
-      await axios.delete("http://localhost:5000/api/profile/data", {
+      
+      // Use the API URL from your App.js configuration
+      const API_URL = "http://localhost:5001";
+        
+      const response = await axios.delete(`${API_URL}/api/profile/data`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
-      alert("Your data has been successfully deleted.");
-      window.location.href = "/logout";
+      if (response.data.success) {
+        alert("Your data has been successfully deleted.");
+        window.location.href = "/logout";
+      } else {
+        throw new Error(response.data.error || "Failed to delete data");
+      }
     } catch (error) {
       console.error("Error deleting data:", error);
       alert("Failed to delete data. Please try again.");
@@ -192,17 +223,32 @@ const Profile = () => {
 
   const handleDataExport = async () => {
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = authUser || auth.currentUser;
       if (!currentUser) return;
 
       const token = await currentUser.getIdToken();
-      const response = await axios.get("http://localhost:5000/api/profile/export", {
+      
+      // Use the API URL from your App.js configuration
+      const API_URL = "http://localhost:5001";
+        
+      const response = await axios.get(`${API_URL}/api/profile/export`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         responseType: 'blob'
       });
+
+      // Check if response is a JSON error (in case server returns error instead of blob)
+      if (response.data.type?.includes('application/json')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const errorData = JSON.parse(e.target.result);
+          alert(`Failed to export data: ${errorData.error || 'Unknown error'}`);
+        };
+        reader.readAsText(response.data);
+        return;
+      }
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -453,7 +499,7 @@ const Profile = () => {
         )}
 
         <motion.button 
-          className="profile-save-btn w-full mt-6 bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 px-6 rounded-lg hover:opacity-90 transition-opacity"
+          className="profile-save-btn"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSave}

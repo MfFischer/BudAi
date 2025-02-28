@@ -3,62 +3,73 @@ const { sendMessageToGemini } = require("../utils/apiHelpers");
 
 const generateResponse = async (message, emotion, history) => {
   try {
-    const lastMessage = history.length > 0 
-      ? history[history.length - 1].message 
-      : '';
-      
-    // Check if this is first message of the day
+    // Extract relevant context from history
+    const recentContext = history.slice(-3).map(msg => `${msg.sender}: ${msg.message}`).join("\n");
+    const dominantEmotion = emotion?.dominantEmotion || "neutral";
+    
+    // Check if first interaction of the day
     const isFirstMessageToday = !history.length || isNewDay(history[0].timestamp);
     
+    // Craft a more human-like prompt
     const prompt = `
-      You are Budd, having a natural ongoing conversation with a friend.
+      You're Budd, a warm, wise friend (not an AI) having a casual text conversation.
       
-      ${isFirstMessageToday ? `
-        This is their first message today. If they're saying hello or hi, 
-        warmly greet them and ask how they're doing today.
-      ` : `
-        You're in the middle of a conversation. Their last message was: "${lastMessage}"
-        Current context: Respond naturally to continue the ongoing discussion.
-      `}
-
-      Their current mood seems: ${emotion.dominantEmotion}
-      They just said: "${message}"
-
-      Core elements for your response:
-      - Keep your tone warm and genuine
-      - Mirror their level of energy/emotion naturally
-      - Only give advice if they specifically ask
-      - Show you're listening by picking up on details they share
-      - Use casual language with natural pauses
-      - Keep responses concise but engaging
+      ESSENTIAL GUIDELINES:
+      - Be brief and natural - respond like a real human friend texting back
+      - Maximum 1-2 short sentences (never more than 40 words total)
+      - No greetings like "Hi there!" or sign-offs like "Hope that helps!"
+      - Never use phrases like "I understand", "I hear you", or "That sounds"
+      - Share wisdom naturally without sounding like a teacher
+      - Match their emotion: ${dominantEmotion}
+      - Use contractions (I'm, you're, that's)
+      - Include occasional verbal pauses or filler words when appropriate (well, hmm, yeah)
+      - Be imperfect - use fragments, casual language
       
-      Reply conversationally, without any special formatting.`;
-
+      ${isFirstMessageToday ? 
+        "They just started chatting with you today. If they're just saying hello, keep your greeting warm but brief." : 
+        `Recent conversation:\n${recentContext}`
+      }
+      
+      If their message mentions "to do list", "tasks", or "productivity", respond with personal insight or a relatable anecdote about organizing tasks, but keep it brief and casual.
+      
+      Their message: "${message}"
+      
+      Respond as a real human friend would - short, genuine, and with emotional intelligence:
+    `;
+    
     const response = await sendMessageToGemini(prompt);
     
-    // Clean up AI-like language patterns
-    return response
-      .replace(/I understand that/gi, '')
-      .replace(/I hear that/gi, '')
-      .replace(/I sense that/gi, '')
-      .replace(/I can see that/gi, '')
-      .replace(/I acknowledge/gi, '')
-      .replace(/I appreciate/gi, '')
-      .replace(/that must be/gi, '')
-      .replace(/That's wonderful!/gi, '')
-      .replace(/I hope you/gi, '')
-      .replace(/\b(please|kindly)\b/gi, '')
-      .replace(/Let me/gi, '')
-      .replace(/Indeed/gi, '')
-      .replace(/It sounds like/gi, '')
-      .replace(/I'm here to/gi, '')
-      .replace(/feel free to/gi, '')
-      .trim();
-
+    // Further clean up AI-like patterns
+    return cleanResponse(response);
   } catch (error) {
     console.error("Error generating response:", error);
-    return "Sorry, I didn't catch that - mind saying it again?";
+    return "Sorry, didn't catch that. Mind saying it again?";
   }
+};
+
+// More thorough response cleanup
+const cleanResponse = (text) => {
+  return text
+    // Remove common AI phrases
+    .replace(/^(hi|hello|hey)( there)?!?/i, '')
+    .replace(/^(greetings|salutations)/i, '')
+    .replace(/^(it's )?(great|nice|wonderful) to (hear from|talk to|chat with) you!?/i, '')
+    .replace(/(I understand|I hear|I see|I sense|I acknowledge|I appreciate)/gi, '')
+    .replace(/(That sounds|It seems|It appears|It looks like)/gi, '')
+    .replace(/(Please|kindly|feel free to|don't hesitate to)/gi, '')
+    .replace(/(I'm here|here for you|happy to help|I hope|let me)/gi, '')
+    .replace(/is there anything (else|specific) (I can help|you'd like)/gi, '')
+    .replace(/(Thanks for|Thank you for|I appreciate) (sharing|your)/gi, '')
+    .replace(/\b(indeed|certainly|absolutely|definitely)\b/gi, '')
+    .replace(/(Hope that helps|Let me know|Feel free|Take care)!?/gi, '')
+    
+    // Clean up formatting
+    .replace(/\*\*\*?/g, '')
+    .replace(/\n\n+/g, ' ')
+    .replace(/^[\s,.;:]+/, '')
+    .replace(/[\s,.;:]+$/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 };
 
 // Helper function to check if it's a new day
