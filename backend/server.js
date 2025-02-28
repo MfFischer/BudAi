@@ -6,12 +6,13 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const NodeCache = require('node-cache');
 const { admin, db } = require('./config/firebase');
+const { authenticateUser } = require('./middleware/auth');
 
 const app = express();
 const apiUsageCache = new NodeCache({ stdTTL: 86400 }); // Cache expires after 24 hours
 
-// Validate required environment variables
-const requiredEnvVars = ['FRONTEND_URL', 'GEMINI_API_KEY']; // Removed PORT, handled below
+// Validate environment variables with better fallbacks for local development
+const requiredEnvVars = ['GEMINI_API_KEY'];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);
@@ -19,12 +20,16 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+// Default frontend URL for local development
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+console.log(`Using frontend URL: ${FRONTEND_URL}`);
+
 app.set('trust proxy', 1);
 
-// Global rate limiter
+// Global rate limiter - less strict for local development
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 200, // Increased for development
   message: {
     success: false,
     error: "Too many requests, please try again later.",
@@ -35,51 +40,96 @@ const globalLimiter = rateLimit({
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // Use Heroku/Firebase URL, no fallback to localhost
+  origin: ['http://localhost:3000', FRONTEND_URL], // Allow localhost for development
   credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(morgan('combined'));
+app.use(morgan('dev')); // More concise logs for development
 app.use(helmet());
 app.use(globalLimiter);
 
-// Routes
-const authRoutes = require('./routes/authRoutes');
-const profileRoutes = require('./routes/profileRoutes');
-const activityRoutes = require('./routes/activityRoutes');
-const chatRoutes = require('./routes/chatRoutes');
-
-// Authentication middleware
-const verifyAuth = async (req, res, next) => {
+// Safely load route modules with error handling
+const loadRoute = (path) => {
   try {
-    const token = req.headers.authorization?.split('Bearer ')[1];
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        error: "Authentication required",
+    const route = require(path);
+    if (typeof route !== 'function') {
+      console.error(`Warning: The route module at ${path} does not export a router function`);
+      console.error(`Type received: ${typeof route}`);
+      // Return a dummy router that reports the configuration error
+      const dummyRouter = express.Router();
+      dummyRouter.all('*', (req, res) => {
+        res.status(500).json({
+          success: false,
+          error: `Route configuration error in ${path}`
+        });
       });
+      return dummyRouter;
     }
-
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    req.user = decodedToken;
-
-    if (req.path.startsWith('/api/chat')) {
-      req.body = { ...req.body, uid: decodedToken.uid };
-    }
-
-    next();
+    return route;
   } catch (error) {
-    console.error('Auth error:', error);
-    res.status(401).json({
-      success: false,
-      error: "Authentication failed",
+    console.error(`Error loading route ${path}:`, error);
+    // Return a dummy router that reports the error
+    const dummyRouter = express.Router();
+    dummyRouter.all('*', (req, res) => {
+      res.status(500).json({
+        success: false,
+        error: `Failed to load route module: ${path}`
+      });
     });
+    return dummyRouter;
   }
 };
 
-// Track API usage
+// Load routes with error handling
+console.log("Loading route modules...");
+let chatRoutes, profileRoutes, activityRoutes, authRoutes;
+
+try {
+  chatRoutes = require('./routes/chatRoutes');
+  console.log("Chat routes loaded successfully");
+} catch (error) {
+  console.error("Failed to load chat routes:", error);
+  chatRoutes = express.Router();
+  chatRoutes.all('*', (req, res) => {
+    res.status(500).json({
+      success: false,
+      error: "Chat routes failed to load"
+    });
+  });
+}
+
+try {
+  profileRoutes = require('./routes/profileRoutes');
+  console.log("Profile routes loaded successfully");
+} catch (error) {
+  console.error("Failed to load profile routes:", error);
+  profileRoutes = express.Router();
+}
+
+try {
+  activityRoutes = require('./routes/activityRoutes');
+  console.log("Activity routes loaded successfully");
+} catch (error) {
+  console.error("Failed to load activity routes:", error);
+  activityRoutes = express.Router();
+}
+
+try {
+  authRoutes = require('./routes/authRoutes');
+  console.log("Auth routes loaded successfully");
+} catch (error) {
+  console.error("Failed to load auth routes:", error);
+  authRoutes = express.Router();
+}
+
+// Track API usage - simplified for local development
 const trackApiUsage = (req, res, next) => {
+  // Skip tracking for local development if needed
+  if (process.env.NODE_ENV === 'development') {
+    return next();
+  }
+  
   const today = new Date().toISOString().split('T')[0];
   const usage = apiUsageCache.get(today) || 0;
 
@@ -104,6 +154,16 @@ const getResetTime = () => {
   return resetTime.toISOString();
 };
 
+// Debug middleware to log requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  if (req.method === 'POST') {
+    console.log('Request body:', req.body);
+  }
+  console.log('Headers:', req.headers.authorization ? 'Auth header present' : 'No auth header');
+  next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -114,7 +174,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Status endpoint
-app.get('/api/status', verifyAuth, async (req, res) => {
+app.get('/api/status', authenticateUser, async (req, res) => {
   try {
     res.json({
       success: true,
@@ -133,10 +193,10 @@ app.get('/api/status', verifyAuth, async (req, res) => {
   }
 });
 
-// Protected routes
-app.use('/api/chat', verifyAuth, trackApiUsage, chatRoutes);
-app.use('/api/activities', verifyAuth, activityRoutes);
-app.use('/api/profile', verifyAuth, profileRoutes);
+// Protected routes - using authenticateUser from middleware/auth.js
+app.use('/api/chat', authenticateUser, trackApiUsage, chatRoutes);
+app.use('/api/activities', authenticateUser, activityRoutes);
+app.use('/api/profile', authenticateUser, profileRoutes);
 app.use('/api/auth', authRoutes);
 
 // Error handling middleware
@@ -164,6 +224,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}`);
 });
 
 // Graceful shutdown
