@@ -38,6 +38,11 @@ const createHumanLikeResponse = (userMessage) => {
     return "Doing pretty well! Just finished some work. What about you?";
   }
   
+  // To-do lists and productivity
+  if (messageLower.includes("to do list") || messageLower.includes("tasks") || messageLower.includes("productivity")) {
+    return "I get that—lists keep me on track too. Might be worth trying some flexibility, though, in case inspiration strikes outside the list!";
+  }
+  
   // Default responses based on message length
   if (userMessage.length < 15) {
     return "Tell me more about that. What's on your mind today?";
@@ -53,6 +58,16 @@ const createHumanLikeResponse = (userMessage) => {
   ];
   
   return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+};
+
+// Helper function to determine emotion (simple heuristic)
+const determineEmotion = (message) => {
+  const messageLower = message.toLowerCase();
+  if (messageLower.includes("happy") || messageLower.includes("great") || messageLower.includes("productive")) return "happy";
+  if (messageLower.includes("sad") || messageLower.includes("down")) return "sad";
+  if (messageLower.includes("angry") || messageLower.includes("frustrated")) return "angry";
+  if (messageLower.includes("anxious") || messageLower.includes("stressed")) return "anxious";
+  return "neutral"; // Default to neutral if no emotion detected
 };
 
 // Handle chat messages
@@ -84,13 +99,15 @@ exports.handleChat = async (req, res) => {
       // Save conversation
       try {
         await Promise.all([
-          db.collection("user_chats").add({  // Changed from "chats" to "user_chats"
+          db.collection("user_chats").add({
             uid: userId,
-            message,
+            userMessage: message, // Save the raw user message
+            message, // Keep the original message field for consistency
             sender: "user",
+            emotion: { dominantEmotion: determineEmotion(message) }, // Add inferred emotion
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
           }),
-          db.collection("user_chats").add({  // Changed from "chats" to "user_chats"
+          db.collection("user_chats").add({
             uid: userId,
             message: botResponse,
             sender: "ai",
@@ -120,7 +137,7 @@ exports.handleChat = async (req, res) => {
     let history = [];
     try {
       const chatHistory = await db
-        .collection("user_chats")  // Changed from "chats" to "user_chats"
+        .collection("user_chats")
         .where("uid", "==", userId)
         .orderBy("timestamp", "desc")
         .limit(5)
@@ -152,28 +169,18 @@ exports.handleChat = async (req, res) => {
     // Option 1: Use the direct human-like response function (faster and more reliable)
     const aiResponse = createHumanLikeResponse(message);
     
-    // Option 2: Uncomment this section if you want to try the Gemini API with strict brevity
-    // (but this has been less reliable in providing concise responses)
-    /*
-    try {
-      const aiResponse = await sendMessageToGemini(message);
-      console.log("Received response from Gemini API");
-    } catch (apiError) {
-      console.error("Error with Gemini API, using fallback response:", apiError);
-      const aiResponse = createHumanLikeResponse(message);
-    }
-    */
-
-    // Save messages
+    // Save messages with userMessage and emotion
     try {
       await Promise.all([
-        db.collection("user_chats").add({  // Changed from "chats" to "user_chats"
+        db.collection("user_chats").add({
           uid: userId,
-          message,
+          userMessage: message, // Save the raw user message
+          message, // Keep the original message field for consistency
           sender: "user",
+          emotion: { dominantEmotion: determineEmotion(message) }, // Add inferred emotion
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         }),
-        db.collection("user_chats").add({  // Changed from "chats" to "user_chats"
+        db.collection("user_chats").add({
           uid: userId,
           message: aiResponse,
           sender: "ai",

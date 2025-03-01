@@ -1,3 +1,4 @@
+// controllers/activityControllers.js
 const { suggestActivities } = require('../services/activitySuggestions');
 const { db } = require('../config/firebase');
 

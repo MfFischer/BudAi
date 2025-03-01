@@ -1,4 +1,4 @@
-// Define your API key handling and Google Gemini API integration
+// Define your API key handling and Google Generative AI integration
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Initialize the Google Generative AI with your API key
@@ -26,37 +26,37 @@ If JSON is requested, respond ONLY with a valid, complete JSON object in this ex
   "dailySuggestions": [
     {
       "title": "Brief activity title",
-      "description": "Short description of the activity"
+      "description": "Short, friendly description of the activity, like you’re chatting"
     }
   ],
   "mindfulnessActivities": [
     {
       "title": "Activity name",
-      "description": "Brief overview",
-      "duration": "Estimated time",
-      "benefits": "Key benefits",
+      "description": "Brief overview, conversational and warm",
+      "duration": "Estimated time, short and simple",
+      "benefits": "Key benefits, in a friend’s tone",
       "instructions": ["Step 1", "Step 2", "Step 3"],
-      "guidance": "A gentle reminder or tip"
+      "guidance": "A gentle, friendly tip or encouragement"
     }
   ],
-  "journalingPrompt": "A thoughtful journaling prompt related to their current state"
+  "journalingPrompt": "A thoughtful, friend-like journaling prompt related to their current state"
 }
-Ensure the JSON is fully formed, with all required fields and no truncation.
+Ensure the JSON is fully formed, with all required fields, no truncation, and double-quoted keys (e.g., "title", not 'title'). Use proper double quotes for all strings, and ensure apostrophes (e.g., "don't", "you're") are correctly formatted as ' (apostrophe), not " (straight quote).
 `;
     }
 
     brevityPrompt += `
 ${prompt}
 
-REMEMBER: If JSON is requested, return a complete, valid JSON object. If text, keep it to 1-2 sentences, conversational, and brief like a text message.
+REMEMBER: If JSON is requested, return a complete, valid JSON object with double-quoted keys and proper apostrophes (e.g., "don't", not "don"t"). If text, keep it to 1-2 sentences, conversational, and brief like a text message.
 `;
 
     // Updated model and strict configuration
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: "gemini-1.5-pro", // Or "gemini-2.0-flash-lite" if using a different model
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 200, // Increased to ensure full JSON object can fit
+        maxOutputTokens: 500, // Ensure full JSON object can fit
         topP: 0.8,
         topK: 40
       }
@@ -74,9 +74,15 @@ REMEMBER: If JSON is requested, return a complete, valid JSON object. If text, k
         // Remove any backticks or code block markers
         text = text.replace(/^```json\s*|\s*```$/g, '').trim().replace(/^json\s*/i, '');
         
-        // Attempt to repair incomplete JSON by adding closing brackets if needed
+        // Ensure double quotes for JSON compliance and fix apostrophes
+        text = text.replace(/'/g, '"') // Replace single quotes with double quotes
+          .replace(/(\w+)s(\w+)/g, '$1\'s$2') // Fix apostrophes (e.g., "What"s" -> "What's")
+          .replace(/(\w+)’s(\w+)/g, '$1\'s$2') // Handle smart quotes if present
+          .replace(/"(\w+)t worry"/g, "'$1n't worry'") // Fix "don"t" -> "don't"
+          .replace(/"(\w+)t"/g, "'$1n't'"); // Fix other contractions (e.g., "can"t" -> "can't")
+
         if (!text.endsWith('}')) {
-          text += '}'; // Try to close the JSON object
+          text += '}'; // Attempt to close the JSON object
           console.log("Attempted to repair incomplete JSON:", text);
         }
 
@@ -84,25 +90,25 @@ REMEMBER: If JSON is requested, return a complete, valid JSON object. If text, k
         return jsonResponse; // Return the parsed JSON object
       } catch (parseError) {
         console.error("Failed to parse Gemini JSON response in sendMessageToGemini:", parseError, "Raw response:", text);
-        // Fallback to default JSON structure if parsing fails
+        // Fallback to default JSON structure with double quotes and proper apostrophes
         return {
-          dailySuggestions: [
+          "dailySuggestions": [
             {
-              title: "Take a Mindful Break",
-              description: "Practice deep breathing for a few minutes"
+              "title": "Take a Mindful Break",
+              "description": "Chill with some deep breathing—it’s super relaxing!"
             }
           ],
-          mindfulnessActivities: [
+          "mindfulnessActivities": [
             {
-              title: "Simple Breathing Exercise",
-              description: "A calming breathing technique",
-              duration: "5 minutes",
-              benefits: "Reduces stress and anxiety, improves focus",
-              instructions: ["Find a comfortable seated position", "Close your eyes gently", "Breathe in slowly for 4 counts", "Hold for 4 counts", "Exhale slowly for 4 counts", "Repeat for 5 minutes"],
-              guidance: "If your mind wanders, gently bring your attention back to your breath"
+              "title": "Easy Breathing",
+              "description": "A quick way to calm down and feel grounded",
+              "duration": "5 minutes",
+              "benefits": "Takes the edge off, helps you feel lighter",
+              "instructions": ["Sit comfy somewhere quiet", "Close your eyes if you want", "Breathe in slow for 4 counts, hold, then breathe out slow"],
+              "guidance": "Don’t stress if your mind wanders—just ease back to your breath, buddy!"
             }
           ],
-          journalingPrompt: "What's one small thing you're grateful for today?"
+          "journalingPrompt": "Hey, what’s one little thing that made you smile today?"
         };
       }
     }
@@ -118,27 +124,27 @@ REMEMBER: If JSON is requested, return a complete, valid JSON object. If text, k
     if (error.status === 404) {
       console.log("Using fallback response due to API configuration issue");
       return expectJson ? {
-        dailySuggestions: [
+        "dailySuggestions": [
           {
-            title: "Take a Walk",
-            description: "Clear your mind with a short stroll"
+            "title": "Take a Walk",
+            "description": "Fresh air does wonders—go for a quick stroll, it’ll lift your mood!"
           }
         ],
-        mindfulnessActivities: [
+        "mindfulnessActivities": [
           {
-            title: "Deep Breathing",
-            description: "A quick relaxation technique",
-            duration: "5 minutes",
-            benefits: "Calms the mind, reduces stress",
-            instructions: ["Sit comfortably", "Breathe in for 4 seconds", "Exhale for 4 seconds", "Repeat"],
-            guidance: "Focus on your breath if your mind wanders"
+            "title": "Deep Breathing",
+            "description": "A simple way to chill out fast",
+            "duration": "5 minutes",
+            "benefits": "Calms you down, makes you feel lighter",
+            "instructions": ["Sit somewhere quiet", "Breathe in for 4 seconds", "Exhale for 4 seconds", "Repeat"],
+            "guidance": "Don’t worry if your mind drifts—just focus back, friend!"
           }
         ],
-        journalingPrompt: "What’s one thing you’re looking forward to?"
+        "journalingPrompt": "What’s one thing you’re looking forward to?"
       } : "I get that. Sometimes letting go is exactly what helps things come to you. Less attachment can create space for what you want.";
     }
     
-    // Detect rate limiting errors
+    // Detect rate limiting errors (already handled in previous logs)
     if (error.message?.includes('RESOURCE_EXHAUSTED') || 
         error.message?.includes('quota') || 
         error.message?.includes('rate limit')) {

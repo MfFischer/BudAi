@@ -1,3 +1,4 @@
+// services/activitySuggestions.js
 const { sendMessageToGemini } = require("../utils/apiHelpers");
 const { db } = require('../config/firebase');
 const admin = require('firebase-admin');
@@ -143,100 +144,99 @@ const getDailyQuote = () => {
 const suggestActivities = async (uid, emotion = {}, userMessage = "") => {
   try {
     const prompt = `
-      You are an emotionally intelligent AI companion. Based on the user's emotional state (${emotion.dominantEmotion || 'neutral'}) 
-      and their message: "${userMessage}", provide personalized activity suggestions.
+      You are Budd, a warm, wise friend (not an AI) suggesting activities for your buddy. Based on their emotional state (${emotion.dominantEmotion || 'neutral'}) 
+      and their recent message: "${userMessage}", suggest activities that feel like advice you’d give a close friend—casual, supportive, and fun.
+      
+      If the userMessage is empty or neutral, suggest general activities that promote well-being and lift their spirits, like you’re cheering them up.
       
       Respond ONLY with a JSON object in this exact format, with no additional text or backticks:
       {
         "dailySuggestions": [
           {
             "title": "Brief activity title",
-            "description": "Short description of the activity"
+            "description": "Short, friendly description of the activity, like you’re chatting"
           }
         ],
         "mindfulnessActivities": [
           {
             "title": "Activity name",
-            "description": "Brief overview",
-            "duration": "Estimated time",
-            "benefits": "Key benefits",
+            "description": "Brief overview, conversational and warm",
+            "duration": "Estimated time, short and simple",
+            "benefits": "Key benefits, in a friend’s tone",
             "instructions": ["Step 1", "Step 2", "Step 3"],
-            "guidance": "A gentle reminder or tip"
+            "guidance": "A gentle, friendly tip or encouragement"
           }
         ],
-        "journalingPrompt": "A thoughtful journaling prompt related to their current state"
+        "journalingPrompt": "A thoughtful, friend-like journaling prompt related to their current state"
       }
     `;
 
     console.log("Sending prompt to Gemini:", prompt); // Debug log
 
     const result = await sendMessageToGemini(prompt, true);
-console.log("Raw Gemini response:", result); // Debug log to inspect the response
+    console.log("Raw Gemini response:", result); // Debug log to inspect the response
 
-let suggestions;
+    let suggestions;
 
-// Handle the response (it should now be a JSON object)
-if (typeof result === 'object' && (result.dailySuggestions || result.mindfulnessActivities || result.journalingPrompt)) {
-  suggestions = result; // Use the JSON object directly
-} else {
-  // Fallback in case of unexpected format (e.g., string or malformed JSON)
-  try {
-    let cleanResult = (typeof result === 'string' ? result : JSON.stringify(result)).trim()
-      .replace(/^```json\s*|\s*```$/g, '')
-      .replace(/^json\s*/i, '');
-    
-    suggestions = JSON.parse(cleanResult);
-  } catch (parseError) {
-    console.error("Failed to parse Gemini response as JSON:", parseError, "Raw response:", cleanResult);
-    // Use default suggestions as fallback
-    suggestions = {
-      dailySuggestions: [
-        {
-          title: "Take a Mindful Break",
-          description: "Practice deep breathing for a few minutes"
-        },
-        {
-          title: "Connect with Nature",
-          description: "Take a short walk outside"
-        },
-        {
-          title: "Express Yourself",
-          description: "Write down your thoughts and feelings"
-        }
-      ],
-      mindfulnessActivities: [
-        {
-          title: "Simple Breathing Exercise",
-          description: "A calming breathing technique",
-          duration: "5 minutes",
-          benefits: "Reduces stress and anxiety, improves focus",
-          instructions: [
-            "Find a comfortable seated position",
-            "Close your eyes gently",
-            "Breathe in slowly for 4 counts",
-            "Hold for 4 counts",
-            "Exhale slowly for 4 counts",
-            "Repeat for 5 minutes"
+    // Handle the response (it should now be a JSON object with double-quoted keys)
+    if (typeof result === 'object' && (result.dailySuggestions || result.mindfulnessActivities || result.journalingPrompt)) {
+      suggestions = result; // Use the JSON object directly
+    } else {
+      // Fallback in case of unexpected format (e.g., string or malformed JSON)
+      try {
+        let cleanResult = (typeof result === 'string' ? result : JSON.stringify(result)).trim()
+          .replace(/^```json\s*|\s*```$/g, '')
+          .replace(/^json\s*/i, '')
+          .replace(/'/g, '"'); // Ensure double quotes for JSON compliance
+        
+        suggestions = JSON.parse(cleanResult);
+      } catch (parseError) {
+        console.error("Failed to parse Gemini response as JSON:", parseError, "Raw response:", cleanResult);
+        // Use default suggestions as fallback, formatted as a friend would suggest
+        suggestions = {
+          "dailySuggestions": [
+            {
+              "title": "Take a Mindful Break",
+              "description": "Chill with some deep breathing—it’s super relaxing!"
+            },
+            {
+              "title": "Stroll Outside",
+              "description": "A quick walk outside, nature’s way of lifting your mood."
+            },
+            {
+              "title": "Jot Down Thoughts",
+              "description": "Write what’s on your mind, it’s like a chat with yourself."
+            }
           ],
-          guidance: "If your mind wanders, gently bring your attention back to your breath"
-        }
-      ],
-      journalingPrompt: "What's one small thing you're grateful for today?"
+          "mindfulnessActivities": [
+            {
+              "title": "Easy Breathing",
+              "description": "A quick way to calm down and feel grounded",
+              "duration": "5 minutes",
+              "benefits": "Takes the edge off, helps you feel lighter",
+              "instructions": [
+                "Sit comfy somewhere quiet",
+                "Close your eyes if you want",
+                "Breathe in slow for 4 counts, hold, then breathe out slow"
+              ],
+              "guidance": "Don’t stress if your mind wanders—just ease back to your breath, buddy!"
+            }
+          ],
+          "journalingPrompt": "Hey, what’s one little thing that made you smile today?"
+        };
+      }
+    }
+
+    const dailyQuote = getDailyQuote();
+
+    return {
+      dailySuggestions: suggestions.dailySuggestions,
+      mindfulnessActivities: suggestions.mindfulnessActivities,
+      journalingPrompt: suggestions.journalingPrompt,
+      motivationalQuote: dailyQuote.quote,
+      quoteTheme: dailyQuote.theme,
+      quoteDate: new Date().toLocaleDateString()
     };
-  }
-}
-
-const dailyQuote = getDailyQuote();
-
-return {
-  dailySuggestions: suggestions.dailySuggestions,
-  mindfulnessActivities: suggestions.mindfulnessActivities,
-  journalingPrompt: suggestions.journalingPrompt,
-  motivationalQuote: dailyQuote.quote,
-  quoteTheme: dailyQuote.theme,
-  quoteDate: new Date().toLocaleDateString()
-};
-
   } catch (error) {
     console.error("Error suggesting activities:", error);
     
@@ -251,41 +251,38 @@ return {
       };
     }
 
-    // For other errors, return default suggestions
+    // For other errors, return default suggestions formatted as a friend would suggest
     const dailyQuote = getDailyQuote();
     return {
       dailySuggestions: [
         {
-          title: "Take a Mindful Break",
-          description: "Practice deep breathing for a few minutes"
+          "title": "Take a Mindful Break",
+          "description": "Chill with some deep breathing—it’s super relaxing!"
         },
         {
-          title: "Connect with Nature",
-          description: "Take a short walk outside"
+          "title": "Stroll Outside",
+          "description": "A quick walk outside, nature’s way of lifting your mood."
         },
         {
-          title: "Express Yourself",
-          description: "Write down your thoughts and feelings"
+          "title": "Jot Down Thoughts",
+          "description": "Write what’s on your mind, it’s like a chat with yourself."
         }
       ],
       mindfulnessActivities: [
         {
-          title: "Simple Breathing Exercise",
-          description: "A calming breathing technique",
-          duration: "5 minutes",
-          benefits: "Reduces stress and anxiety, improves focus",
-          instructions: [
-            "Find a comfortable seated position",
-            "Close your eyes gently",
-            "Breathe in slowly for 4 counts",
-            "Hold for 4 counts",
-            "Exhale slowly for 4 counts",
-            "Repeat for 5 minutes"
+          "title": "Easy Breathing",
+          "description": "A quick way to calm down and feel grounded",
+          "duration": "5 minutes",
+          "benefits": "Takes the edge off, helps you feel lighter",
+          "instructions": [
+            "Sit comfy somewhere quiet",
+            "Close your eyes if you want",
+            "Breathe in slow for 4 counts, hold, then breathe out slow"
           ],
-          guidance: "If your mind wanders, gently bring your attention back to your breath"
+          "guidance": "Don’t stress if your mind wanders—just ease back to your breath, buddy!"
         }
       ],
-      journalingPrompt: "What's one small thing you're grateful for today?",
+      journalingPrompt: "Hey, what’s one little thing that made you smile today?",
       motivationalQuote: dailyQuote.quote,
       quoteTheme: dailyQuote.theme,
       quoteDate: new Date().toLocaleDateString()
