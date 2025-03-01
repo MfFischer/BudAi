@@ -203,6 +203,16 @@ app.get('/api/status', authenticateUser, async (req, res) => {
   }
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to Budai Backend!',
+    status: 'Server is running',
+    healthCheck: 'https://budai-backend-new-612857cffd0f.herokuapp.com/health'
+  });
+});
+
 // Protected routes - using authenticateUser from middleware/auth.js
 app.use('/api/chat', authenticateUser, trackApiUsage, chatRoutes);
 app.use('/api/activities', authenticateUser, activityRoutes);
