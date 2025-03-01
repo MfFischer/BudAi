@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Centralized API URL configuration
 export const BACKEND_API_URL = process.env.NODE_ENV === "production" 
-  ? "https://budai-backend-9cb72ccad5cf.herokuapp.com"
-  : "http://localhost:5001";
+  ? "https://budai-backend-new-612857cffd0f.herokuapp.com" // Updated production URL
+  : "http://localhost:5001"; // Local dev URL remains the same
 
 // Create a reusable axios instance
 export const api = axios.create({
