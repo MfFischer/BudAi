@@ -41,9 +41,10 @@ const globalLimiter = rateLimit({
 // Middleware
 app.use(cors({
   origin: [
-    'http://localhost:3000',         // Local development
-    'https://budai-ef5fa.web.app',   // Your Firebase production URL
-    'https://budai-ef5fa.firebaseapp.com', // Alternative Firebase domain
+    'http://localhost:3000',         
+    'https://budai-ef5fa.web.app',   
+    'https://budai-ef5fa.firebaseapp.com', 
+    'https://buddai.chat',    // Alternative Firebase domain
     FRONTEND_URL                     // From environment variable
   ],
   credentials: true,
